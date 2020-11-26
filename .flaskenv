@@ -1,0 +1,2 @@
+FLASK_APP=commonAPi.app:app
+FLASK_ENV=development
