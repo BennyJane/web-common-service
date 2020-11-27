@@ -1,6 +1,6 @@
 from flask_restful import Resource
 
-from commonAPi.constant import ReqJson
+from webAPi.constant import ReqJson
 
 
 class Other(Resource):
