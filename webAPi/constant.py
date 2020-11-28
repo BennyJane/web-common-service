@@ -8,7 +8,7 @@
 class ReqJson:
     __slots__ = ('_code', '_data', '_msg',)
 
-    def __init__(self, code=0, data=None, msg=""):
+    def __init__(self, code=1, data=None, msg=""):
         self._code = code
         self._data = {} if data is None else data
         self._msg = msg

@@ -10,7 +10,7 @@ def register_errors(app):
     app.errorhandler(404)(not_found)
     app.errorhandler(405)(method_not_allowed)  # 该异常没有捕获
     app.errorhandler(500)(internal_server_error)
-    # app.errorhandler(Exception)(allException)
+    app.errorhandler(Exception)(allException)  # TODO 全局异常捕获
 
 
 def bad_request(e):
@@ -34,8 +34,9 @@ def internal_server_error(e):
 
 
 def allException(e):
-    print(e)
-    return ""
+    req = ReqJson()
+    req.msg = str(e)
+    return jsonify(req.result)
 
 
 """
@@ -44,5 +45,32 @@ def allException(e):
 ============================================================================================================
 """
 restful_errors = {
-    ""
+    'UserAlreadyExistsError': {
+        'message': "A user with that username already exists.",
+        'status': 409,
+    },
+    'ResourceDoesNotExist': {
+        'message': "A resource with that ID no longer exists.",
+        'status': 410,
+        'extra': "Any extra information you want.",
+    },
+    'FieldParseError': {
+        'msg': "A resource with that ID no longer exists.",
+        'status': 400,
+        'code': 1,
+    },
 }
+
+"""
+============================================================================================================
+处理 flask-restful抛出的字段解析错误
+============================================================================================================
+"""
+
+
+def register_teardown_request(app):
+    app.teardown_request(dealError)
+
+
+def dealError(response):
+    return response

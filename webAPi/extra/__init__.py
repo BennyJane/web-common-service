@@ -1,12 +1,8 @@
-from flask import Blueprint
 from flask_restful import Api
-
-extra_bp = Blueprint('extra', __name__)
-extra_api = Api(extra_bp)
 
 
 def register_extra_api(app):
-    app.register_blueprint(extra_bp)
+    extra_api = Api(app)
+    # extra_api.init_app(app)  # 这样的定义方式不起作用
     from .index import Index
-
     extra_api.add_resource(Index, '/')
