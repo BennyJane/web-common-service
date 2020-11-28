@@ -1,4 +1,5 @@
 import os
+
 from .base import BaseConfig, prefix, project_root_path
 
 
@@ -9,3 +10,8 @@ class DevelopmentConfig(BaseConfig):
     broker_url = 'redis://localhost:6379'
     result_backend = 'redis://localhost:6379'
     imports = ('proStruct.services.tasks')
+
+    # 配置redis
+    REDIS_HOST = '127.0.0.1'
+    REDIS_PORT = 6379
+    REDIS_PASSWORD = None

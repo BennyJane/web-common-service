@@ -15,9 +15,7 @@ from flask import request, jsonify
 token加密主要通过jwt包来完成，
 - token的刷新，通过一个专门的接口实现，当access_token 失效后，会利用fresh_token来获取新的token，
 同时将 jwt中字段fresh修改为false，将当前token标记为非新鲜token。
-    - fresh_token 由前端存储？？
 - 需要一个装饰器，用来限制一些安全级别较高的端口，必须使用未刷新过的token，也就是新鲜token才能访问
-- 
 
 bug:
 jwt不支持 sha256算法
@@ -53,20 +51,22 @@ class JWTManager(object):
         config = app.config
         self.secret = config.get('SESSION_KEY')
 
-    def encode_token(self, identity, fresh):
-        res = _encode_token(identity, self.token_expire, self.secret, self.algorithm, fresh)
+    def encode_token(self, identity, fresh, now=None):
+        res = _encode_token(identity, self.token_expire, self.secret, self.algorithm, fresh, now_time=now)
         return res
 
-    def encode_fresh_token(self, identity):
-        res = _encode_fresh_token(identity, self.fresh_expire, self.secret, self.algorithm)
+    def encode_fresh_token(self, identity, now=None):
+        res = _encode_fresh_token(identity, self.fresh_expire, self.secret, self.algorithm, now_time=now)
         return res
 
-    def decode_jwt(self, token):
-        _decode_jwt(token, self.secret, self.algorithm)
-
-    def verify_jwt(self):
-        res = _verify_jwt(self.auth_header, self.token_prefix, self.secret, self.algorithm)
+    def decode_jwt(self, token, redis_conn=None):
+        res, need_update_token = _decode_jwt(token, self.secret, self.algorithm, redis_conn=redis_conn)
         return res
+
+    def verify_jwt(self, redis_conn=None):
+        res, need_update_token = _verify_jwt(self.auth_header, self.token_prefix, self.secret, self.algorithm,
+                                             redis_conn=redis_conn)
+        return res, need_update_token
 
     @staticmethod
     def jwt_required(f):
@@ -88,17 +88,18 @@ class JWTManager(object):
 """
 
 
-def _encode_token(identity, expire, secret, algorithm, fresh):
+def _encode_token(identity, expire, secret, algorithm, fresh, now_time=None):
     """
     :param identity:  用户ID，用于区别不同用户
     :param expire:  过期时间
     :param secret:  加密盐
     :param algorithm: 加密算法
     :param fresh:  是否为新鲜的token
+    :param now:  token生成时间
     :return: 编码后的JWT
     """
     # FIXME 使用 datetime.datetime.now() 会报错，会报 The token is not yet valid (nbf)
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.utcnow() if now_time is None else now_time
     token_data = {
         "exp": now + expire,  # exp token过期时间
         # token的开始生效时间，当前时间在开始时间之前，抛出错误 jwt.exceptions.InvalidIssuedAtError: Issued At claim (iat) cannot be in the future
@@ -116,24 +117,45 @@ def _encode_token(identity, expire, secret, algorithm, fresh):
     return bytes_str.decode('utf-8')
 
 
-def _decode_jwt(token, secret, algorithm):
+def _decode_jwt(token, secret, algorithm, redis_conn=None):
     try:
-        res = jwt.decode(token, secret, algorithm)
-        print('decode', res)
-        return res
+        res = jwt.decode(token, secret, verify=True, algorithms=algorithm)
     except jwt.ExpiredSignatureError:
-        raise JWTDecodeError("token失效")
+        # 设置 verify=False，直接解析token，不报错
+        token_info = jwt.decode(token, secret, verify=False, algorithms=algorithm)
+        account = token_info['identity']
+        access_token_create_time = token_info['iat']
+        # todo 添加刷新token功能
+        refresh_token = redis_conn.get_refresh_token(account=account)
+        if refresh_token is None:
+            raise JWTDecodeError("token失效")
+        try:
+            # 解析refresh_token中的信息
+            refresh_token_info = jwt.decode(refresh_token, secret, algorithms=algorithm)
+            refresh_token_create_time = refresh_token_info['iat']
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            raise JWTDecodeError("token失效")
+        if access_token_create_time < refresh_token_create_time:
+            raise JWTDecodeError("token失效")
+        # 需要重新生成刷新token
+        return token_info, True  # 返回token携带的信息，以及是否需要生成新的token
     except jwt.InvalidTokenError:
-        raise InvalidHeaderError("token无效")
+        raise JWTDecodeError("token无效")
     except Exception as e:
         raise e
-    # except jwt.InvalidTokenError:
-    #     # todo 区别具体原因
-    #     raise Exception("token 验证错误")
+    return res, False
 
 
-def _encode_fresh_token(identity, fresh_expire, secret, algorithm):
-    now = datetime.datetime.utcnow()
+def _encode_fresh_token(identity, fresh_expire, secret, algorithm, now_time=None):
+    """
+    :param identity: 账号ID
+    :param fresh_expire: 刷新token的过期时间
+    :param secret: 加密参数
+    :param algorithm: 加密算法
+    :param access_time: access_token 的创建时间， 确保两者创建的时间一致
+    :return:
+    """
+    now = datetime.datetime.utcnow() if now_time is None else now_time
     token_data = {
         'exp': now + fresh_expire,
         'iat': now,
@@ -146,7 +168,7 @@ def _encode_fresh_token(identity, fresh_expire, secret, algorithm):
     return bytes_str.decode("utf-8")
 
 
-def _verify_jwt(auth_header, token_prefix, secret, algorithm):
+def _verify_jwt(auth_header, token_prefix, secret, algorithm, redis_conn=None):
     """验证request请求中包含的token"""
     auth_header = request.headers.get(auth_header, None)
     if not auth_header:
@@ -159,4 +181,4 @@ def _verify_jwt(auth_header, token_prefix, secret, algorithm):
         msg = "格式错误，应该为 'Bearer <JWT>'"
         raise InvalidHeaderError(msg)
     token = parts[1]
-    return _decode_jwt(token, secret, algorithm)
+    return _decode_jwt(token, secret, algorithm, redis_conn=redis_conn)

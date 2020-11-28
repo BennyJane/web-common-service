@@ -48,3 +48,6 @@ class ReqJson:
 
 class HttpCode:
     """"""
+
+
+REDIS_REFRESH_TOKEN_KEY = "{}:refresh_token"

@@ -10,7 +10,7 @@ def register_errors(app):
     app.errorhandler(404)(not_found)
     app.errorhandler(405)(method_not_allowed)  # 该异常没有捕获
     app.errorhandler(500)(internal_server_error)
-    app.errorhandler(Exception)(allException)  # TODO 全局异常捕获
+    # app.errorhandler(Exception)(allException)  # TODO 全局异常捕获
 
 
 def bad_request(e):
