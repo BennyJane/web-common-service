@@ -3,13 +3,17 @@
 # @Author : Benny Jane
 # @Email : 暂无
 import os
+
 from flask import Flask
+
 from config import projectConfigs
+from webAPi.errors import register_errors
 from webAPi.extra import extra_bp, extra_api
-from webAPi.extra.other import Other
-from webAPi.routes import api_bp, resources_api
-from webAPi.routes.auth import Login, Logout, Register
+from webAPi.extra import register_extra_api
+from webAPi.models import *  # 导入所有数据表
+from webAPi.routes import resources_api, register_routes_api
 from webAPi.routes.index import Index
+from .extensions import register_ext, db
 
 
 def create_app(config_name=None):
@@ -20,15 +24,15 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(projectConfigs[config_name])
 
-    app.register_blueprint(api_bp, url_prefix='/api/v1')  # api必须先绑定蓝图，然后再在flask实例上注册蓝图，顺序不能变
-    app.register_blueprint(extra_bp, url_prefix='/api/v1/extra')
+    register_errors(app)  # 处理异常情况
 
-    resources_api.add_resource(Index, '/')
-    resources_api.add_resource(Login, '/auth/login')
-    resources_api.add_resource(Logout, '/auth/logout')
-    resources_api.add_resource(Register, '/auth/register')
+    register_routes_api(app)  # 核心接口定义
+    register_extra_api(app)  # 次要接口定义
 
-    # extra
-    extra_api.add_resource(Other, '/')
+    register_ext(app)  # 绑定扩展包
+    with app.app_context():  # 必须在app的上下文中，才能执行创建数据库的操作
+        # db.drop_all()
+        db.create_all()
+        AppInfo.insert_data()
 
     return app  # todo　必须返回Flask实例

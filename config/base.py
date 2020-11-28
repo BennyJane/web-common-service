@@ -11,6 +11,7 @@ if win:
 class BaseConfig:
     PROJECT_NAME = "web-common-service"
     PROJECT_ROOT_PATH = project_root_path
+    HOST = 8002
 
     SESSION_KEY = 'BENNY JANE'
     IS_DEBUG = True
