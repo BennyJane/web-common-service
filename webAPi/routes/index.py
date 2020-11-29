@@ -5,5 +5,12 @@ from webAPi.constant import ReqJson
 
 class Index(Resource):
     def get(self):
-        req = ReqJson(msg="公共项目接口版本1.0版本")
+        req = ReqJson(
+            code=0,
+            data={
+                "author": "benny jane",
+                "version": "0.1.0",
+                "create_at": "20201126",
+            },
+            msg="")
         return req.result

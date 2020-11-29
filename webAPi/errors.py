@@ -1,3 +1,5 @@
+import sys
+
 from flask import jsonify
 
 from .constant import ReqJson
@@ -8,9 +10,9 @@ def register_errors(app):
     # 直接调用装饰器
     app.errorhandler(400)(bad_request)
     app.errorhandler(404)(not_found)
-    app.errorhandler(405)(method_not_allowed)  # 该异常没有捕获
+    app.errorhandler(405)(method_not_allowed)  # todo 该异常没有捕获
     app.errorhandler(500)(internal_server_error)
-    # app.errorhandler(Exception)(allException)  # TODO 全局异常捕获
+    app.errorhandler(Exception)(allException)  # 全局异常捕获
 
 
 def bad_request(e):
@@ -36,6 +38,8 @@ def internal_server_error(e):
 def allException(e):
     req = ReqJson()
     req.msg = str(e)
+    print(e)
+    print(sys.exc_info())
     return jsonify(req.result)
 
 

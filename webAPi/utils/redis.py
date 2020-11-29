@@ -31,3 +31,6 @@ class RedisConn:
     def get_refresh_token(self, account):
         res = self.conn.get(REDIS_REFRESH_TOKEN_KEY.format(account))
         return res
+
+    def del_refresh_token(self, account):
+        self.conn.delete(REDIS_REFRESH_TOKEN_KEY.format(account))

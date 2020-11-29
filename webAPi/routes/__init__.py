@@ -12,7 +12,7 @@ def register_routes_api(app):
     app.register_blueprint(api_bp, url_prefix='/api/v1')  # api必须先绑定蓝图，然后再在flask实例上注册蓝图，顺序不能变
     # FIXME 在该函数中注册 flask-restful api 会失败？？
 
-    from webAPi.routes.auth import Login, Logout, Register, Authenticate
+    from webAPi.routes.auth import Login, Logout, Register, Authenticate, GetTokenByAccount, ChangePassword, AvatarImage
     from webAPi.routes.index import Index
 
     resources_api.add_resource(Index, '/')
@@ -20,3 +20,6 @@ def register_routes_api(app):
     resources_api.add_resource(Logout, '/auth/logout')
     resources_api.add_resource(Register, '/auth/register')
     resources_api.add_resource(Authenticate, '/auth/authenticate')
+    resources_api.add_resource(GetTokenByAccount, '/auth/login/account')
+    resources_api.add_resource(ChangePassword, '/auth/account/reset-password')
+    resources_api.add_resource(AvatarImage, '/auth/account/avatar')

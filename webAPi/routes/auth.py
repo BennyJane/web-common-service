@@ -1,6 +1,7 @@
 import datetime
 
 from flask_restful import Resource, reqparse
+from sqlalchemy import and_
 
 from webAPi.constant import ReqJson
 from webAPi.extensions import db
@@ -67,7 +68,7 @@ class Login(Resource):
         elif user.status == 1:
             req.msg = "账号被禁用"
         elif user.password == front_data['password']:
-            now_time = datetime.datetime.utcnow()   # 这里必须使用utcnow 时间， 不能使用now
+            now_time = datetime.datetime.utcnow()  # 这里必须使用utcnow 时间， 不能使用now
             # 生成两个token
             access_token = jwt_manager.encode_token(account, fresh=True, now=now_time)
             refresh_token = jwt_manager.encode_fresh_token(account, now=now_time)
@@ -76,7 +77,7 @@ class Login(Resource):
             req.code = 0
             req.data = {
                 "access_token": access_token,
-                "refresh_token": refresh_token,
+                # "refresh_token": refresh_token,   # 刷新token存储在redis中，不需要返回
                 "user": {
                     "id": user.id,
                     "app_id": user.app_id,
@@ -124,30 +125,104 @@ class Authenticate(Resource):
         return req.result
 
 
-class ChangePassword(Resource):
-    def post(self):
-        """change password"""
-        req = ReqJson(msg="修改密码成功")
+class GetTokenByAccount(Resource):
+    def get(self):
+        """get token by account"""
+        req = ReqJson()
         parse = reqparse.RequestParser(bundle_errors=True)
-        parse.add_argument('password', type=str, required=True, help='请输入新密码', location='form')
-        parse.add_argument('confirm', type=str, required=True, help='请确认新密码', location='form')
-        parse.add_argument('app_id', type=str, required=True, help='请输入应用id', location='form')
+        parse.add_argument('account', type=str, location='args')
+        parse.add_argument('app_id', type=str, location='args')
         front_data = parse.parse_args()
-        req.data = front_data
+        account = front_data.get("account")
+        app_id = front_data.get("app_id")
+
+        user = User.query.filter(and_(User.account == account, User.app_id == app_id)).first()
+
+        if account is None:
+            req.msg = "请输入账号信息"
+        elif app_id is None:
+            req.msg = "请输入应用id"
+        elif user is None:
+            req.msg = "该账号不存在"
+        elif user.status is None:
+            req.msg = "该账号已被禁用"
+        else:
+            now_time = datetime.datetime.utcnow()  # 这里必须使用utcnow 时间， 不能使用now
+            access_token = jwt_manager.encode_token(account, fresh=True, now=now_time)
+            refresh_token = jwt_manager.encode_fresh_token(account, now=now_time)
+            redis_conn.set_refresh_token(account=account, token=refresh_token)
+
+            req.code = 0
+            req.data = {
+                "token": access_token,
+                "user": {
+                    "id": user.id,
+                    "app_id": user.app_id,
+                    "account": user.account,
+                    "status": user.status,
+                    "create_at": user.create_time_str,
+                }
+
+            }
         return req.result
-
-
-class RefreshToken(Resource):
-    def post(self):
-        """refresh token"""
 
 
 class Logout(Resource):
     def get(self):
         """logout"""
         req = ReqJson()
-        parse = reqparse.RequestParser(bundle_errors=True)
-        parse.add_argument('Authorization', type=str, help='请携带token', location=['headers', 'args'])
+        token_info, need_update_token = jwt_manager.verify_jwt(redis_conn=redis_conn)
+        account = token_info.get('identity')
+        if account is None:
+            req.msg = "请输入账号信息"
+        else:
+            req.code = 0
+            req.msg = "退出登录"
+            redis_conn.del_refresh_token(account)
+        return req.result
+
+
+class ChangePassword(Resource):
+    def post(self):
+        """change password"""
+        req = ReqJson()
+        parse = reqparse.RequestParser(bundle_errors=False)
+        parse.add_argument('password', type=str, location='form')
+        parse.add_argument('confirm', type=str, location='form')
+        parse.add_argument('app_id', type=str, location='form')
         front_data = parse.parse_args()
-        req.data = front_data
-        return req
+        password = front_data.get("password")
+        confirm = front_data.get("confirm")
+        app_id = front_data.get("app_id")
+
+        token_info, need_update_token = jwt_manager.verify_jwt(redis_conn=redis_conn)
+        account = token_info.get("identity")
+
+        user = User.query.filter(and_(User.account == account, User.app_id == app_id)).first()
+
+        if not token_info.get('fresh') or need_update_token:
+            req.msg = "请重新验证登录信息(token为刷新token，而不是刚创建的token)"
+        elif not password:
+            req.msg = "请输入新密码"
+        elif not confirm:
+            req.msg = "请输入确认密码"
+        elif password != confirm:
+            req.msg = "两次密码输入不一致"
+        elif user is None:
+            req.msg = "账号不存在"
+        elif password == user.password:
+            req.msg = "新密码不能与旧密码一样"
+        else:
+            req.code = 0
+            req.msg = "密码修改成功"
+            user.password = password
+            db.session.commit()
+        return req.result
+
+
+class AvatarImage(Resource):  # 生成头像存储在本地？ 还是存储在数据库
+    def post(self):
+        """make avatar"""
+
+    def get(self):
+        """get avatar"""
