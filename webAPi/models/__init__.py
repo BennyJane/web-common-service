@@ -21,3 +21,4 @@ class BaseMixin(object):  # 参考superset项目
 
 from .user import User
 from .appInfo import AppInfo
+from .download import Downloading
