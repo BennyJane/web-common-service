@@ -2,6 +2,7 @@ import os
 from flask import request, g, send_from_directory, current_app
 from flask_restful import Resource, reqparse
 from webAPi.constant import ReqJson
+from webAPi.utils.decorator import WhiteApi
 from webAPi.utils.load_libs import SimpleUpload
 
 
@@ -33,7 +34,10 @@ class GetImage(Resource):
         """get image"""
 
 
+# @WhiteApi("api")
 class DownloadImage(Resource):
+    # method_decorators = [WhiteApi("api_bp")]
+
     def get(self):
         """download image"""
         req = ReqJson()

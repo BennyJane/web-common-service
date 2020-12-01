@@ -41,5 +41,4 @@ class BaseConfig:
         'api.authenticate',
         # 'api.downloadimage',
         'static',
-        'index',
     ]
