@@ -17,5 +17,7 @@ def modifyPath(relativePath: str) -> str:
     :return:
     """
     if win:
-        relativePath = '\\'.join(relativePath.split('\\'))
-    return relativePath
+        path = '\\'.join(relativePath.split('\/'))
+    else:
+        path = '/'.join(relativePath.split('\\'))
+    return path

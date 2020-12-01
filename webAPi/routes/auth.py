@@ -9,18 +9,19 @@ from webAPi.extensions import jwt_manager, redis_conn
 from webAPi.models.user import User
 from webAPi.utils.com import setSHA256
 
+login_register_parse = reqparse.RequestParser()
+# TODO required=True, 会自动抛出异常，但返回接口格式不标准，弃用
+login_register_parse.add_argument('app_id', type=str, location='form')
+login_register_parse.add_argument('account', type=str, location='form')
+login_register_parse.add_argument('password', type=str, location='form')
+
 
 class Register(Resource):
 
     def post(self):
         """register"""
         req = ReqJson()
-        parse = reqparse.RequestParser(bundle_errors=False)
-        parse.add_argument('app_id', type=str, required=False, help='请输入应用id', location='form')
-        parse.add_argument('account', type=str, required=False, help='请输入账号信息', location='form')
-        parse.add_argument('password', type=str, required=False, help='请输入密码', location='form')
-        front_data = parse.parse_args()
-
+        front_data = login_register_parse.parse_args()
         # FIXME 传入的密码应该使用sha256加密， 前端加密，后端不需要加密 --》 测试设置
         front_data['password'] = setSHA256(front_data.get('password'))
         user = User.query.filter_by(account=front_data.get('account')).first()
@@ -45,16 +46,13 @@ class Login(Resource):
     def post(self):
         """login"""
         req = ReqJson()  # 预设登录失败的情况， 缩减代码量
-        parse = reqparse.RequestParser()
         # TODO required=True, 会自动抛出异常，但返回接口格式不标准，弃用
-        parse.add_argument('app_id', type=str, required=False, help='请输入应用id', location='form')
-        parse.add_argument('account', type=str, required=False, help='请输入账号信息', location='form')
-        parse.add_argument('password', type=str, required=False, help='请输入密码', location='form')
-        front_data = parse.parse_args()
+        front_data = login_register_parse.parse_args()
         account = front_data.get('account')
+        app_id = front_data.get('app_id')
 
-        user = User.query.filter_by(account=account).filter_by(
-            app_id=front_data.get('app_id')).first()
+        print(front_data)
+        user = User.query.filter(and_(User.account == account, User.app_id == app_id)).first()
         if front_data['app_id'] is None:
             req.msg = "请输入应用id"
         elif not account:
@@ -70,8 +68,8 @@ class Login(Resource):
         elif user.password == front_data['password']:
             now_time = datetime.datetime.utcnow()  # 这里必须使用utcnow 时间， 不能使用now
             # 生成两个token
-            access_token = jwt_manager.encode_token(account, fresh=True, now=now_time)
-            refresh_token = jwt_manager.encode_fresh_token(account, now=now_time)
+            access_token = jwt_manager.encode_token(account, app_id, fresh=True, now=now_time)
+            refresh_token = jwt_manager.encode_fresh_token(account, app_id, now=now_time)
             # 将刷新token添加到redis中
             redis_conn.set_refresh_token(account=account, token=refresh_token)
             req.code = 0

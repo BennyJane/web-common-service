@@ -52,12 +52,12 @@ class JWTManager(object):
         config = app.config
         self.secret = config.get('SESSION_KEY')
 
-    def encode_token(self, identity, fresh, now=None):
-        res = _encode_token(identity, self.token_expire, self.secret, self.algorithm, fresh, now_time=now)
+    def encode_token(self, identity, app_id, fresh, now=None):
+        res = _encode_token(identity, app_id, self.token_expire, self.secret, self.algorithm, fresh, now_time=now)
         return res
 
-    def encode_fresh_token(self, identity, now=None):
-        res = _encode_fresh_token(identity, self.fresh_expire, self.secret, self.algorithm, now_time=now)
+    def encode_fresh_token(self, identity, app_id, now=None):
+        res = _encode_fresh_token(identity, app_id, self.fresh_expire, self.secret, self.algorithm, now_time=now)
         return res
 
     def decode_jwt(self, token, redis_conn=None):
@@ -89,7 +89,7 @@ class JWTManager(object):
 """
 
 
-def _encode_token(identity, expire, secret, algorithm, fresh, now_time=None):
+def _encode_token(identity, app_id, expire, secret, algorithm, fresh, now_time=None):
     """
     :param identity:  用户ID，用于区别不同用户
     :param expire:  过期时间
@@ -111,6 +111,7 @@ def _encode_token(identity, expire, secret, algorithm, fresh, now_time=None):
         "nbf": now,
         "jti": str(uuid.uuid4()),
         "identity": identity,
+        "appId": app_id,
         "fresh": fresh,  # bool， 登录，修改密码时，设置为true；刷新token后，设置为false
         # 区别不同的应用场景
         "type": "access"
@@ -132,7 +133,7 @@ def _decode_jwt(token, secret, algorithm, redis_conn=None):
     return res, False
 
 
-def _encode_fresh_token(identity, fresh_expire, secret, algorithm, now_time=None):
+def _encode_fresh_token(identity, app_id, fresh_expire, secret, algorithm, now_time=None):
     """
     :param identity: 账号ID
     :param fresh_expire: 刷新token的过期时间
@@ -148,6 +149,7 @@ def _encode_fresh_token(identity, fresh_expire, secret, algorithm, now_time=None
         # 'nbf': now,
         'jti': str(uuid.uuid4()),
         'identity': identity,
+        'appId': app_id,
         'type': 'refresh',
     }
     bytes_str = jwt.encode(token_data, secret, algorithm)
@@ -158,7 +160,7 @@ def _verify_jwt(auth_header, token_prefix, secret, algorithm, redis_conn=None):
     """验证request请求中包含的token"""
     auth_header = request.headers.get(auth_header, None)
     if not auth_header:
-        raise JWTDecodeError("token请求参数不正确")
+        raise JWTDecodeError("没有携带token")
     parts = auth_header.split()
     if parts[0] != token_prefix:
         msg = "格式错误，应该为 'Bearer <JWT>'"

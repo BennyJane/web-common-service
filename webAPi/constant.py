@@ -51,3 +51,19 @@ class HttpCode:
 
 
 REDIS_REFRESH_TOKEN_KEY = "{}:refresh_token"
+
+UPLOAD_FILE_BASE_CONF = {
+    "allow_file_types": ["image", "doc"],
+    "image": {
+        "max_content_size": 1024 * 1024 * 3,  # 默认文件最大为3M
+        "allow_extensions": ["png", 'jpg', 'gif', 'webp'],  # 允许上传的文件后缀名
+    },
+    "doc": {
+        "max_content_size": 1024 * 1024 * 5,  # 默认文件最大为5M
+        "allow_extensions": ['doc', 'docx', 'pdf', 'csv', 'xls'],  # 允许上传的文件后缀名
+    },
+    "video": {
+        "max_content_size": 1024 * 1024 * 20,  # 默认文件最大为20M
+        "allow_extensions": [],  # 允许上传的文件后缀名
+    },
+}

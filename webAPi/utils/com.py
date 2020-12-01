@@ -26,3 +26,5 @@ def getFormatDate(date=None, _format="%Y-%m-%d %H:%M:%S"):
     return date.strftime(_format)
 
 
+
+

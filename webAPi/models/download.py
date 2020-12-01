@@ -6,7 +6,7 @@ class Downloading(db.Model, BaseMixin):
     __tablename__ = 'downloading'
     id = Column(db.String(32), primary_key=True)
     app_id = Column(db.String(32), nullable=False, comment="不同应用的标识id")
-    conf = Column(db.Text, nullable=False, comment="使用json存储上传文件的配置信息")
+    name = Column(db.String(120), nullable=False, comment="文件原始名称")
     file_type = Column(db.String(120), nullable=False, comment="上传文件的类型")
 
     def __init__(self, *args, **kwargs):

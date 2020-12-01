@@ -1,6 +1,6 @@
 import sys
-
-from flask import jsonify
+import traceback
+from flask import jsonify, current_app
 
 from .constant import ReqJson
 
@@ -38,8 +38,10 @@ def internal_server_error(e):
 def allException(e):
     req = ReqJson()
     req.msg = str(e)
-    print(e)
-    print(sys.exc_info())
+    config = current_app.config
+    if config.get("IS_DEBUG"):  # 开发模式下，打印输出异常发生的位置
+        # print(traceback.print_exc())
+        print(traceback.format_exc())
     return jsonify(req.result)
 
 

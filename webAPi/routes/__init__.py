@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, current_app
 from flask_restful import Api
 
 from webAPi.errors import restful_errors

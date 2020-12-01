@@ -15,3 +15,9 @@ class User(db.Model, BaseMixin):
         if kwargs.get('id') is None:
             kwargs['id'] = produce_id()
         super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def insert_test_user():
+        test_user = User(id=produce_id(), app_id="dc601e113be8a2e622f9f9a3f363eb93", account="15927166568", password="123456")
+        db.session.add(test_user)
+        db.session.commit()

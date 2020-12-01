@@ -13,6 +13,7 @@ from webAPi.extra import register_extra_api
 from webAPi.models import *  # 导入所有数据表
 from webAPi.routes import register_routes_api
 from webAPi.routes.index import Index
+from webAPi.utils.decorator import register_before_after
 from .extensions import register_ext, db
 
 
@@ -21,8 +22,11 @@ def create_app(config_name=None):
         config_name = os.getenv('FLASK_ENV', 'development')
         if config_name not in projectConfigs.keys():
             config_name = 'development'
-    app = Flask(__name__)
-    app.config.from_object(projectConfigs[config_name])
+    config_object = projectConfigs[config_name]
+    app = Flask(__name__, static_folder=config_object.UPLOAD_PATH)
+    app.config.from_object(config_object)
+
+    register_before_after(app)
 
     register_routes_api(app)  # 核心接口定义
     register_extra_api(app)  # 次要接口定义
@@ -32,6 +36,7 @@ def create_app(config_name=None):
         # db.drop_all()
         db.create_all()
         AppInfo.insert_data()
+        User.insert_test_user()
 
     register_errors(app)  # 处理异常情况
     register_teardown_request(app)
