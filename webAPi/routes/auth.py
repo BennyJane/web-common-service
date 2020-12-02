@@ -11,9 +11,9 @@ from webAPi.utils.com import setSHA256
 
 login_register_parse = reqparse.RequestParser()
 # TODO required=True, 会自动抛出异常，但返回接口格式不标准，弃用
-login_register_parse.add_argument('app_id', type=str, location='form')
-login_register_parse.add_argument('account', type=str, location='form')
-login_register_parse.add_argument('password', type=str, location='form')
+login_register_parse.add_argument('app_id', type=str, location='json')
+login_register_parse.add_argument('account', type=str, location='json')
+login_register_parse.add_argument('password', type=str, location='json')
 
 
 class Register(Resource):
@@ -48,6 +48,7 @@ class Login(Resource):
         req = ReqJson()  # 预设登录失败的情况， 缩减代码量
         # TODO required=True, 会自动抛出异常，但返回接口格式不标准，弃用
         front_data = login_register_parse.parse_args()
+        print(front_data)
         account = front_data.get('account')
         app_id = front_data.get('app_id')
 
@@ -93,7 +94,7 @@ class Authenticate(Resource):
         """authenticate"""
         req = ReqJson()
         parse = reqparse.RequestParser(bundle_errors=True)
-        parse.add_argument('app_id', type=str, required=False, help='请输入应用id', location='form')
+        parse.add_argument('app_id', type=str, required=False, help='请输入应用id', location='json')
         # 自定义token解析
         # parse.add_argument('Authorization', type=str, help='请携带token', location=['headers', 'args'])
         front_data = parse.parse_args()
@@ -185,9 +186,9 @@ class ChangePassword(Resource):
         """change password"""
         req = ReqJson()
         parse = reqparse.RequestParser(bundle_errors=False)
-        parse.add_argument('password', type=str, location='form')
-        parse.add_argument('confirm', type=str, location='form')
-        parse.add_argument('app_id', type=str, location='form')
+        parse.add_argument('password', type=str, location='json')
+        parse.add_argument('confirm', type=str, location='json')
+        parse.add_argument('app_id', type=str, location='json')
         front_data = parse.parse_args()
         password = front_data.get("password")
         confirm = front_data.get("confirm")

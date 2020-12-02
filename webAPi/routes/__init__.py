@@ -24,7 +24,14 @@ def register_routes_api(app):
     resources_api.add_resource(ChangePassword, '/auth/account/reset-password')
     resources_api.add_resource(AvatarImage, '/auth/account/avatar')
 
-    from webAPi.routes.download import DownloadImage, GetImage, LocalUploadFile
+    from webAPi.routes.download import DownloadImage, GetImage, LocalUploadFile, UpdateFileConf
     resources_api.add_resource(LocalUploadFile, '/media/upload')
     resources_api.add_resource(DownloadImage, '/media/download')
     resources_api.add_resource(GetImage, '/media/get-image')
+    resources_api.add_resource(UpdateFileConf, '/media/update/file/conf')
+
+    from webAPi.routes.mail import MailConf, SimpleSendMail
+
+    resources_api.add_resource(MailConf, '/mail/templates')
+    resources_api.add_resource(SimpleSendMail, '/mail/task')
+

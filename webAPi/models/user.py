@@ -1,4 +1,9 @@
-from webAPi.models import db, Column, BaseMixin
+from flask import current_app
+from sqlalchemy import and_
+
+from webAPi.models import db
+from webAPi.models import Column
+from webAPi.models import BaseMixin
 from webAPi.utils.com import produce_id
 
 
@@ -18,6 +23,14 @@ class User(db.Model, BaseMixin):
 
     @staticmethod
     def insert_test_user():
-        test_user = User(id=produce_id(), app_id="dc601e113be8a2e622f9f9a3f363eb93", account="15927166568", password="123456")
-        db.session.add(test_user)
-        db.session.commit()
+        config = current_app.config
+        test_account = config.get("TEST_ACCOUNT")
+        test_password = config.get("TEST_PASSWORD")
+        test_app_id = config.get("TEST_APP_ID")
+        user = User.query.filter(and_(User.account == test_account,
+                                      User.app_id == test_app_id)).first()
+        if not user:
+            test_user = User(id=produce_id(), app_id=test_app_id, account=test_account,
+                             password=test_password)
+            db.session.add(test_user)
+            db.session.commit()

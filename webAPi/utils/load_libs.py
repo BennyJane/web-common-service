@@ -1,8 +1,9 @@
 import os
 import uuid
-from flask import current_app, g
-from werkzeug.utils import secure_filename
+from flask import g
+from flask import current_app
 from _compat import modifyPath
+from werkzeug.utils import secure_filename
 from webAPi.models.appInfo import AppInfo
 
 
@@ -104,7 +105,7 @@ class SimpleUpload(BaseUpload):
                     "filename": ori_name,
                     "new_name": new_name
                 })
-            return files_info
+        return files_info
 
 
 if __name__ == '__main__':

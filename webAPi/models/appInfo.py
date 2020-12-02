@@ -1,7 +1,9 @@
-from collections import namedtuple
 import json
+from flask import g
+from collections import namedtuple
 from webAPi.extensions import db
-from webAPi.models import Column, BaseMixin
+from webAPi.models import Column
+from webAPi.models import BaseMixin
 from webAPi.utils.com import produce_id
 from webAPi.constant import UPLOAD_FILE_BASE_CONF
 
@@ -24,17 +26,20 @@ class AppInfo(db.Model, BaseMixin):
         ]
         for info in app_infos:
             app = AppInfo.query.filter_by(name=info.name).first()
+            # 对于已经存在的项目数据，只通过接口更新
             if app is None:
                 app_id = info.id if info.id else produce_id()
                 app = AppInfo(id=app_id, name=info.name, brief=info.brief,
                               status=info.status, conf=json.dumps(info.conf, ensure_ascii=False))
                 db.session.add(app)
-            else:  # 更新操作
-                app.name = info.name
-                app.brief = info.brief
-                app.status = info.status
-        db.session.commit()
+                db.session.commit()
 
     @property
     def upload_conf(self):
         return json.loads(self.conf)
+
+    @staticmethod
+    def get_app_info():
+        app_id = g.app_id
+        app_info = AppInfo.query.get(app_id)
+        return app_info

@@ -1,9 +1,15 @@
 import os
-from flask import request, g, send_from_directory, current_app
-from flask_restful import Resource, reqparse
+import json
+from flask import g
+from flask import request
+from webAPi.extensions import db
+from flask import send_from_directory
+from flask_restful import Resource
+from flask_restful import reqparse
 from webAPi.constant import ReqJson
 from webAPi.utils.decorator import WhiteApi
 from webAPi.utils.load_libs import SimpleUpload
+from webAPi.models.appInfo import AppInfo
 
 
 class LocalUploadFile(Resource):
@@ -29,17 +35,12 @@ class LocalUploadFile(Resource):
         return req.result
 
 
-class GetImage(Resource):
-    def get(self):
-        """get image"""
-
-
-# @WhiteApi("api")
+@WhiteApi("api")
 class DownloadImage(Resource):
     # method_decorators = [WhiteApi("api_bp")]
 
-    def get(self):
-        """download image"""
+    @staticmethod
+    def downingAndPreview(as_attachment=True):  # 减少重复代码
         req = ReqJson()
         parse = reqparse.RequestParser()
         parse.add_argument('filename', type=str, location='args')  # 上传文件类型
@@ -56,8 +57,6 @@ class DownloadImage(Resource):
             yield upload_path
 
         file_gen = get_file_path()
-        # print(get_file_path())
-        print(file_gen)
         if not filename:
             req.msg = "请输入文件名"
         elif not tag:
@@ -68,8 +67,59 @@ class DownloadImage(Resource):
             req.msg = "文件不存在)"
         else:
             upload_dir_path = next(file_gen)
-            print(f"==================== {upload_dir_path}")
-            return send_from_directory(upload_dir_path, filename)
-            # return send_from_directory(upload_dir_path, filename, as_attachment=True)
+            send_from_directory(upload_dir_path, filename, as_attachment=as_attachment)
+            return send_from_directory(upload_dir_path, filename, as_attachment=as_attachment)
+        return req
 
+    def get(self):
+        """download image"""
+        req = DownloadImage.downingAndPreview()
+        return req.result
+
+
+@WhiteApi("api")  # 生产环境需要注释该装饰器，并修改SimpleUpload.upload_path中内容
+class GetImage(Resource):
+    def get(self):
+        """get image: 预览接口"""
+        req = DownloadImage.downingAndPreview(as_attachment=False)
+        if isinstance(req, ReqJson):
+            return req.result
+        return req
+
+
+class UpdateFileConf(Resource):
+
+    def get(self):
+        """获取数据库中项目上传文件相关的配置"""
+        req = ReqJson()
+        req.code = 0
+        req.data = AppInfo.get_app_info().upload_conf
+        return req.result
+
+    def post(self):
+        """修改项目上传文件相关配置"""
+        req = ReqJson()
+        parse = reqparse.RequestParser()
+        # postman 中从 raw-json 中发送信息，从form中无法获取信息
+        # FIXME 注意解析内容为 dict 还是 list
+        parse.add_argument('update_conf', type=dict, location='json')  # 上传文件配置信息，json格式信息
+        front_data = parse.parse_args()
+        update_conf = front_data.get("update_conf")
+
+        app_info = AppInfo.get_app_info()
+        ori_app_conf = app_info.upload_conf
+
+        if not update_conf:
+            req.msg = "请上传需要更新的配置信息"
+        else:
+            try:
+                ori_app_conf.update(update_conf)
+            except Exception as e:
+                raise Exception(f"配置信息更新失败: {str(e)}")
+            else:
+                app_info.conf = json.dumps(ori_app_conf, ensure_ascii=True)
+                req.code = 0
+                req.msg = "更新成功"
+                req.data = ori_app_conf
+                db.session.commit()
         return req.result
