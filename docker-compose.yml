@@ -1,0 +1,11 @@
+#version: '1.0'
+version: '2.1'
+
+services:
+  common-service:
+    container_name: common-service
+    build: ./
+    volumes:
+    - ".:/usr/src/app"
+    ports:
+    - 5000:5000

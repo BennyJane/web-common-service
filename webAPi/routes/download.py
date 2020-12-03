@@ -51,12 +51,10 @@ class DownloadImage(Resource):
 
         def get_file_path():  # 借助闭包，解决逻辑顺序的
             upload_path = SimpleUpload.upload_path(tag)
-            target_file = os.path.join(upload_path, filename)
-            yield target_file
-            yield target_file
-            yield upload_path
+            target_file: str = os.path.join(upload_path, filename)
+            yield from [target_file, target_file, upload_path]
 
-        file_gen = get_file_path()
+        file_gen = get_file_path()  # 只是返回生成器对象，函数内部并没有执行
         if not filename:
             req.msg = "请输入文件名"
         elif not tag:

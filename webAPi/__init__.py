@@ -3,18 +3,17 @@
 # @Author : Benny Jane
 # @Email : 暂无
 import os
-
 from flask import Flask
-
-from config import projectConfigs
-from webAPi.errors import register_errors, register_teardown_request
-# from webAPi.extra import extra_bp, extra_api
-from webAPi.extra import register_extra_api
 from webAPi.models import *  # 导入所有数据表
-from webAPi.routes import register_routes_api
+from config import projectConfigs
+from webAPi.extensions import db
+from webAPi.extensions import register_ext
+from webAPi.extra import register_extra_api
+from webAPi.errors import register_errors
+from webAPi.errors import register_teardown_request
 from webAPi.routes.index import Index
+from webAPi.routes import register_routes_api
 from webAPi.utils.decorator import register_before_after
-from .extensions import register_ext, db
 
 
 def create_app(config_name=None):

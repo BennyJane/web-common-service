@@ -43,23 +43,40 @@ def login_require():
 
 """
 更简单的实现方式：
-white_apis = []
+white_apis = [] # 定义全局变量
 
 def white_api(f, blue: str = None):
+
     endpoint = f"{f.__name__}"
     if blue is not None:
         endpoint = f"{blue}.{f.__name__}"
     white_apis.append(endpoint.lower())
     return f
+
+改进： 在函数上添加属性，实现多次调用之间共享数据
+
+def WhiteApi(f, blue:str=None):
+    # 在函数对象中添加属性，作为公共属性使用
+    try:
+        apis = WhiteApi.white_apis
+    except AttributeError:
+        WhiteApi.white_apis = []
+        
+    endpoint = f"{f.__name__}"
+    if blue is not None:
+        endpoint = f"{blue}.{f.__name__}"
+    white_apis.append(endpoint.lower())
+    return f
+
 """
 
 
 class WhiteApi:
     """使用类实现装饰器：添加免验证的接口白名单"""
-    white_apis = []  # 所有类共有的属性
+    white_apis = []  # 所有类共有的属性, 只在类被创建的时候实例化一次，后续无论该类实例化多少次，都公用该属性
 
-    # FIXME 提防自定义endpoint的试图函数
-    def __new__(cls, *args, **kwargs):  # 特殊单例用法：只生成一个实例对象，但每次实例化都会重新运行__init__方法
+    def __new__(cls, *args, **kwargs):  # 可以不写该方法，允许类被实例化多次，依然可以实现功能
+        # 特殊单例用法：只生成一个实例对象，但每次实例化都会重新运行__init__方法
         instance = cls.__dict__.get("__instance__")
         if instance is not None:
             return instance
@@ -72,6 +89,7 @@ class WhiteApi:
     def __call__(self, f):
         endpoint = f"{f.__name__}"
         if self.blueprint_name is not None:
+            # FIXME 提防自定义endpoint的试图函数
             endpoint = f"{self.blueprint_name}.{f.__name__}"
         self.white_apis.append(endpoint.lower())
         return f
