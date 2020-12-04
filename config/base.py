@@ -1,5 +1,10 @@
+# !/usr/bin/env python
+# -*-coding:utf-8 -*-
+# PROJECT    : web-common-service
+# Time       ：2020/12/4 11:09
+# Warning：The Hard Way Is Easier
 import os
-from _compat import win, modifyPath
+from _compat import win
 
 project_root_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 

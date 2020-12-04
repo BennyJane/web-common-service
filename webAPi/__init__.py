@@ -1,7 +1,8 @@
-# -*- coding: utf-8 -*-
-# @Time : 2020/11/26
-# @Author : Benny Jane
-# @Email : 暂无
+# !/usr/bin/env python
+# -*-coding:utf-8 -*-
+# PROJECT    : web-common-service
+# Time       ：2020/12/4 11:09
+# Warning：The Hard Way Is Easier
 import os
 from flask import Flask
 from webAPi.models import *  # 导入所有数据表
@@ -32,8 +33,8 @@ def create_app(config_name=None):
 
     register_ext(app)  # 绑定扩展包
     with app.app_context():  # 必须在app的上下文中，才能执行创建数据库的操作
-        # db.drop_all()
-        db.create_all()
+        # mysql.drop_all()
+        # mysql.create_all()
         AppInfo.insert_data()
         User.insert_test_user()
 

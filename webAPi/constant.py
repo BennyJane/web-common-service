@@ -1,41 +1,21 @@
-# -*- coding: utf-8 -*-
-# @Time : 2020/11/26
-# @Author : Benny Jane
-# @Email : 暂无
-# @File : __init__.py.py
+# !/usr/bin/env python
+# -*-coding:utf-8 -*-
+# PROJECT    : web-common-service
+# Time       ：2020/12/4 11:09
+# Warning：The Hard Way Is Easier
+from webAPi.utils.descriptor import ResponseDescriptor
 
 
 class ReqJson:
-    __slots__ = ('_code', '_data', '_msg',)
+    # 使用描述符管理实例属性
+    code = ResponseDescriptor("code")
+    data = ResponseDescriptor("data")
+    msg = ResponseDescriptor("msg")
 
     def __init__(self, code=1, data=None, msg=""):
-        self._code = code
-        self._data = {} if data is None else data
-        self._msg = msg
-
-    @property
-    def code(self):
-        return self._code
-
-    @property
-    def data(self):
-        return self._data
-
-    @property
-    def msg(self):
-        return self._msg
-
-    @msg.setter
-    def msg(self, value):
-        self._msg = value
-
-    @data.setter
-    def data(self, value):
-        self._data = value
-
-    @code.setter
-    def code(self, value):
-        self._code = value
+        self.code = code
+        self.data = {} if data is None else data
+        self.msg = msg
 
     @property
     def result(self):

@@ -1,3 +1,9 @@
+# !/usr/bin/env python
+# -*-coding:utf-8 -*-
+# PROJECT    : web-common-service
+# Time       ：2020/12/4 11:09
+# Warning：The Hard Way Is Easier
+
 import datetime
 
 from flask_restful import Resource, reqparse
@@ -93,20 +99,18 @@ class Authenticate(Resource):
     def post(self):
         """authenticate"""
         req = ReqJson()
-        parse = reqparse.RequestParser(bundle_errors=True)
-        parse.add_argument('app_id', type=str, required=False, help='请输入应用id', location='json')
         # 自定义token解析
         # parse.add_argument('Authorization', type=str, help='请携带token', location=['headers', 'args'])
-        front_data = parse.parse_args()
         token_info, need_update_token = jwt_manager.verify_jwt(redis_conn=redis_conn)
         account = token_info['identity']
+        app_id = token_info['appId']
         new_token = ""  # 新token
         if need_update_token:
             now_time = datetime.datetime.utcnow()
             new_token = jwt_manager.encode_token(account, fresh=False, now=now_time)
-        user = User.query.filter_by(app_id=front_data.get('app_id')).filter_by(account=account).first()
+        user = User.query.filter_by(app_id=app_id).filter_by(account=account).first()
 
-        if front_data['app_id'] is None:
+        if app_id is None:
             req.msg = "请输入应用id"
         elif user is None:
             req.msg = "账号不存在"

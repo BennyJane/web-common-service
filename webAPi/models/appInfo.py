@@ -1,3 +1,8 @@
+# !/usr/bin/env python
+# -*-coding:utf-8 -*-
+# PROJECT    : web-common-service
+# Time       ：2020/12/4 11:09
+# Warning：The Hard Way Is Easier
 import json
 from flask import g
 from collections import namedtuple
@@ -12,6 +17,7 @@ APP_INFO = namedtuple('app_info', 'id name brief status conf')
 
 class AppInfo(db.Model, BaseMixin):
     __tablename__ = 'app_info'
+    __table_args__ = {'mysql_engine': 'InnoDB'}  # 支持事务操作和外键
     id = Column(db.String(32), primary_key=True)
     name = Column(db.String(255), nullable=False, comment="应用名称")
     brief = Column(db.Text, nullable=False, comment="应用简介")

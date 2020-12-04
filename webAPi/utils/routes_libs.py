@@ -1,3 +1,9 @@
+# !/usr/bin/env python
+# -*-coding:utf-8 -*-
+# PROJECT    : web-common-service
+# Time       ：2020/12/4 11:09
+# Warning：The Hard Way Is Easier
+
 # from flask import request, jsonify
 # from flask_restful.reqparse import RequestParser
 #

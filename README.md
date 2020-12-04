@@ -29,3 +29,21 @@ docker-compose build
 docker-compose up -d
 ```
 
+# 运行mysql镜像
+```shell script
+cd ./deploy/mysql
+docker-compose build -t 'mysql-db'
+docker-compose up -d
+
+docker run --name mysql-home -e MYSQL_ROOT_PASSWORD=password -p 13306:3306 -d db_mysql-db
+```
+
+# 运行redis镜像
+```shell script
+cd ./deploy/redis
+docker-compose build
+docker-compose up -d
+
+docker run --name mysql-home -e MYSQL_ROOT_PASSWORD=password -p 13306:3306 -d db_mysql-db
+```
+

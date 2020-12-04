@@ -7,12 +7,15 @@ from webAPi.models import db, Column, BaseMixin
 from webAPi.utils.com import produce_id
 
 
-class Downloading(db.Model, BaseMixin):
-    __tablename__ = 'downloading'
+# 记录公共项目操作执行步骤的数据表
+
+class ActionLog(db.Model, BaseMixin):
+    __tablename__ = 'action_log'
     id = Column(db.String(32), primary_key=True)
     app_id = Column(db.String(32), nullable=False, comment="不同应用的标识id")
-    name = Column(db.String(120), nullable=False, comment="文件原始名称")
-    file_type = Column(db.String(120), nullable=False, comment="上传文件的类型")
+    action = Column(db.String(120), nullable=False, comment="访问的视图函数")
+    exec_status = Column(db.INTEGER, default=0, comment="执行结果：0-success  1-fail")
+    log = Column(db.TEXT(120), nullable=False, comment="执行日志")
 
     def __init__(self, *args, **kwargs):
         # 设置id的默认值
