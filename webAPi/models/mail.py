@@ -20,3 +20,18 @@ class MailTemplate(db.Model, BaseMixin):
         if kwargs.get('id') is None:
             kwargs['id'] = produce_id()
         super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def get_templates(app_id):
+        result = []
+        templates = MailTemplate.query.filter(MailTemplate.app_id == app_id).all()
+        for temp in templates:
+            result.append({
+                "id": temp.id,
+                "alias": temp.alias,
+                "subject": temp.subject,
+                "template": temp.template,
+                "create_at": temp.create_time_str,
+            })
+        return result
+    

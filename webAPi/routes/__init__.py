@@ -36,8 +36,8 @@ def register_routes_api(app):
     resources_api.add_resource(GetImage, '/media/get-image')
     resources_api.add_resource(UpdateFileConf, '/media/update/file/conf')
 
-    from webAPi.routes.mail import MailConf, SimpleSendMail
+    from webAPi.routes.mail import MailConf, SimpleSendMail, AddMail
 
     resources_api.add_resource(MailConf, '/mail/templates')
-    resources_api.add_resource(SimpleSendMail, '/mail/task')
-
+    resources_api.add_resource(AddMail, '/mail/task')
+    resources_api.add_resource(SimpleSendMail, '/mail/task/execute')

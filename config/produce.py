@@ -8,7 +8,15 @@ from .base import BaseConfig, prefix, project_root_path
 
 
 class ProduceConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = prefix + os.path.join(project_root_path, 'data-produce.mysql')
+    # 本项目使用的域名与端口号
+    PROJECT_PORT = 5000
+    PROJECT_DOMAIN = f"http://localhost:{PROJECT_PORT}"
+
+    # SQLALCHEMY_DATABASE_URI = prefix + os.path.join(project_root_path, 'data-produce.db')
+    MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
+    SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://root:{MYSQL_PASSWORD}@127.0.0.1:13306/common_web_service?charset=utf8mb4'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENCODING = "utf8mb4"
 
     # 添加celery配置
     broker_url = 'redis://localhost:6379'

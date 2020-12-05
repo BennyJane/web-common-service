@@ -5,15 +5,16 @@
 # Warning：The Hard Way Is Easier
 
 import datetime
-
-from flask_restful import Resource, reqparse
 from sqlalchemy import and_
+from flask_restful import reqparse
+from flask_restful import Resource
 
 from webAPi.constant import ReqJson
-from webAPi.extensions import db
-from webAPi.extensions import jwt_manager, redis_conn
 from webAPi.models.user import User
 from webAPi.utils.com import setSHA256
+from webAPi.extensions import db
+from webAPi.extensions import redis_conn
+from webAPi.extensions import jwt_manager
 
 login_register_parse = reqparse.RequestParser()
 # TODO required=True, 会自动抛出异常，但返回接口格式不标准，弃用

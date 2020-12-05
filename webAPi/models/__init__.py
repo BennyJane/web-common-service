@@ -22,6 +22,11 @@ class BaseMixin(object):  # 参考superset项目
     def update_time_str(self, formatter="%Y-%m-%d %H:%M:%S"):
         return self.create_at.strftime(formatter)
 
+    @property
+    def attr_dict(self) -> dict:
+        """实现获取ORM定义的字段信息，并将其转化为字典格式输出"""
+        print('attr dict', vars(self.__class__))
+
 
 from .user import User
 from .appInfo import AppInfo

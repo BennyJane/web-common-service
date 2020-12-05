@@ -9,6 +9,8 @@ import hashlib
 import os
 import time
 
+import requests
+
 
 def produce_id():
     path = os.getcwd()
@@ -32,5 +34,13 @@ def getFormatDate(date=None, _format="%Y-%m-%d %H:%M:%S"):
     return date.strftime(_format)
 
 
-
-
+def request_send_mail(params, domain=None):
+    url = f"{domain}/api/v1/mail/task/execute"
+    # res = requests.post(url, data=params)
+    res = requests.get(url, data=params)
+    if res.status_code != 200:
+        # 添加日志，记录邮件发送失败的情况
+        print("mail 请求失败")
+        pass
+    else:
+        print("请求成功")

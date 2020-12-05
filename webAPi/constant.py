@@ -47,3 +47,5 @@ UPLOAD_FILE_BASE_CONF = {
         "allow_extensions": [],  # 允许上传的文件后缀名
     },
 }
+
+REDIS_MAIL_QUEUE = "mail:produce:queue"
