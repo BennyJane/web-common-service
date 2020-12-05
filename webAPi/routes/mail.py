@@ -140,6 +140,8 @@ class SimpleSendMail(Resource):
         target_mail = MailTemplate.query.filter(MailTemplate.id == template_id).first()
         mail_token_back = current_app.config.get("MAIL_TOKEN")
 
+        current_app.logger.info(front_data)
+
         if mail_token != mail_token_back:
             req.msg = "验证码错误"
         elif not target_mail:

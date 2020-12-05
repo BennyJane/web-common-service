@@ -3,6 +3,7 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/4 11:09
 # Warning    ：The Hard Way Is Easier
+import os
 import sys
 
 
@@ -18,7 +19,7 @@ win = isWindows()
 
 def modifyPath(relativePath: str) -> str:
     """
-    :param relativePath:  目标文件的相对路径,默认输入linux下路径
+    :param relativePath:  目标文件的相对路径,默认输入linux下路径: logs/api; 开头不能有斜杠
     :return:
     """
     if win:
@@ -26,3 +27,6 @@ def modifyPath(relativePath: str) -> str:
     else:
         path = '/'.join(relativePath.split('\\'))
     return path
+
+
+root_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))

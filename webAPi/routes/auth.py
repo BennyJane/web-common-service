@@ -6,6 +6,7 @@
 
 import datetime
 from sqlalchemy import and_
+from flask import current_app
 from flask_restful import reqparse
 from flask_restful import Resource
 
@@ -55,11 +56,11 @@ class Login(Resource):
         req = ReqJson()  # 预设登录失败的情况， 缩减代码量
         # TODO required=True, 会自动抛出异常，但返回接口格式不标准，弃用
         front_data = login_register_parse.parse_args()
-        print(front_data)
         account = front_data.get('account')
         app_id = front_data.get('app_id')
 
-        print(front_data)
+        current_app.logger.info(front_data)
+
         user = User.query.filter(and_(User.account == account, User.app_id == app_id)).first()
         if front_data['app_id'] is None:
             req.msg = "请输入应用id"

@@ -3,6 +3,7 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
+import logging
 import os
 from .base import BaseConfig, prefix, project_root_path
 
@@ -22,3 +23,8 @@ class ProduceConfig(BaseConfig):
     broker_url = 'redis://localhost:6379'
     result_backend = 'redis://localhost:6379'
     imports = ('proStruct.services.tasks')
+
+    # 日志配置
+    LOG_LEVEL = logging.INFO
+    LOG_FILE_SIZE = 10 * 1204 * 1024
+    LOG_FILE_COUNT = 10

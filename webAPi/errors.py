@@ -18,6 +18,8 @@ def register_errors(app):
     app.errorhandler(500)(internal_server_error)
     app.errorhandler(Exception)(allException)  # 全局异常捕获
 
+    app.teardown_request(dealError)
+
 
 def bad_request(e):
     req = ReqJson(code=1, msg="请求报错")
@@ -76,10 +78,6 @@ restful_errors = {
 处理 flask-restful抛出的字段解析错误
 ============================================================================================================
 """
-
-
-def register_teardown_request(app):
-    app.teardown_request(dealError)
 
 
 def dealError(response):

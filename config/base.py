@@ -5,8 +5,7 @@
 # Warning：The Hard Way Is Easier
 import os
 from _compat import win
-
-project_root_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+from _compat import root_path as project_root_path
 
 prefix = 'sqlite:////'  # linux 下前缀
 if win:
@@ -56,3 +55,4 @@ class BaseConfig:
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = ('admin', MAIL_USERNAME)
     MAIL_TOKEN = "benny-mail-password"  # 用于验证发送邮件的请求是否来源安全
+

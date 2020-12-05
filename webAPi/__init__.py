@@ -8,12 +8,12 @@ from flask import Flask
 from webAPi.models import *  # 导入所有数据表
 from config import projectConfigs
 from webAPi.extensions import db
+from webAPi.routes.index import Index
+from webAPi.routes import register_routes_api
+from webAPi.log import register_logger
 from webAPi.extensions import register_ext
 from webAPi.extra import register_extra_api
 from webAPi.errors import register_errors
-from webAPi.errors import register_teardown_request
-from webAPi.routes.index import Index
-from webAPi.routes import register_routes_api
 from webAPi.utils.decorator import register_before_after
 
 
@@ -39,5 +39,5 @@ def create_app(config_name=None):
         User.insert_test_user()
 
     register_errors(app)  # 处理异常情况
-    register_teardown_request(app)
+    register_logger(app)
     return app  # todo　必须返回Flask实例
