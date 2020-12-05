@@ -48,4 +48,5 @@ UPLOAD_FILE_BASE_CONF = {
     },
 }
 
-REDIS_MAIL_QUEUE = "mail:produce:queue"
+REDIS_MAIL_QUEUE = "mail:produce:queue"  # 邮件队列的键名称
+REDIS_MAIL_INTERVAL = 2  # 邮件发送的时间间隔

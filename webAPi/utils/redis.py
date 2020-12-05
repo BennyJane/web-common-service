@@ -4,12 +4,13 @@
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
 import time
-import json
+import redis
 from threading import Thread
 
-import redis
-from webAPi.constant import REDIS_REFRESH_TOKEN_KEY, REDIS_MAIL_QUEUE
 from webAPi.utils.com import request_send_mail
+from webAPi.constant import REDIS_REFRESH_TOKEN_KEY
+from webAPi.constant import REDIS_MAIL_QUEUE
+from webAPi.constant import REDIS_MAIL_INTERVAL
 
 
 # TODO 实现单例模式，确保redis实例只实例化了一次
@@ -61,15 +62,10 @@ class RedisConn:
     def listen_mail_task(self, target_queue):
         while True:
             try:
-                time.sleep(2)
-                print("listen task ...", target_queue)
+                time.sleep(REDIS_MAIL_INTERVAL)
+                # print("listen task ...", target_queue)
                 # blpop: 队列为空, 阻塞； timeout=0, 则无限阻塞
-                task_params = self.conn.blpop(target_queue, timeout=0)[1]
-                try:
-                    task_params = json.loads(task_params)
-                    # task_params = str(task_params, encoding='utf-8')
-                except Exception as e:
-                    print(e)
+                task_params = self.conn.blpop(target_queue, timeout=0)[1]  # 取出来的数据就是json格式
                 # 执行任务
                 request_send_mail(task_params, domain=self.project_domain)
             except Exception as e:
@@ -78,5 +74,3 @@ class RedisConn:
     def add_task(self, target_queue, task):
         """向队列中添加数据"""
         self.conn.lpush(target_queue, task)
-
-

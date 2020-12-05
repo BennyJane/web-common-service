@@ -34,4 +34,3 @@ class MailTemplate(db.Model, BaseMixin):
                 "create_at": temp.create_time_str,
             })
         return result
-    

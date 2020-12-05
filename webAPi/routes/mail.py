@@ -4,11 +4,9 @@
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
 import json
-from pprint import pprint
-from threading import Thread
-
 from flask import g
 from flask import request
+from flask import current_app
 from sqlalchemy import and_
 from flask_restful import Resource
 from flask_restful import reqparse
@@ -114,12 +112,14 @@ class AddMail(Resource):
         else:
             req.code = 0
             req.msg = "邮件稍后会自动发送，请注意查收"
+
             params = {
                 "template_id": template_id,
                 "alias": alias,
                 "template": mail_template.template,
                 "to_mail": to_mail,
-                "params": params
+                "params": params,
+                "mail_token": current_app.config.get("MAIL_TOKEN"),
             }
             # pprint(params)
             mail_params_str = json.dumps(params, ensure_ascii=True)
@@ -129,28 +129,24 @@ class AddMail(Resource):
 
 @WhiteApi("api")
 class SimpleSendMail(Resource):
-    def get(self):
+    def post(self):
         """send mail by flask-mail"""
         req = ReqJson()
-        parse = reqparse.RequestParser()
-        parse.add_argument("mail_token", type=str, location="form args")
-        parse.add_argument("template_id", type=str, location="form args")
-        parse.add_argument("alias", type=str, location="form args")
-        parse.add_argument("to_mail", type=list, location="form args")
-        parse.add_argument("params", type=dict, location="form args")
-        # front_data = dict(request.form.to_dict())
-        front_data = dict(request.args)
+
+        front_data = request.get_json()
         mail_token = front_data.get("mail_token")
         template_id = front_data.get("template_id")
-        print(front_data)
 
         target_mail = MailTemplate.query.filter(MailTemplate.id == template_id).first()
-        if not target_mail:
+        mail_token_back = current_app.config.get("MAIL_TOKEN")
+
+        if mail_token != mail_token_back:
+            req.msg = "验证码错误"
+        elif not target_mail:
             req.msg = "邮件模板不存在"
         else:
             front_data['template'] = target_mail.template
             multi_send_mail(front_data)
             req.code = 0
             req.msg = "邮件发送成功"
-        print(req.result)
         return req.result
