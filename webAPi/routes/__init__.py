@@ -41,3 +41,9 @@ def register_routes_api(app):
     resources_api.add_resource(MailConf, '/mail/templates')
     resources_api.add_resource(AddMail, '/mail/task')
     resources_api.add_resource(SimpleSendMail, '/mail/task/execute')
+
+    from webAPi.routes.cron import CronTask
+
+    resources_api.add_resource(CronTask, '/cron/task')
+
+
