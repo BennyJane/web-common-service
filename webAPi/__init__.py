@@ -8,6 +8,7 @@ from flask import Flask
 from webAPi.models import *  # 导入所有数据表
 from config import projectConfigs
 from webAPi.extensions import db
+from webAPi.extensions import cron_scheduler
 from webAPi.routes.index import Index
 from webAPi.routes import register_routes_api
 from webAPi.log import register_logger
@@ -33,10 +34,11 @@ def create_app(config_name=None):
 
     register_ext(app)  # 绑定扩展包
     with app.app_context():  # 必须在app的上下文中，才能执行创建数据库的操作
-        # mysql.drop_all()
-        # mysql.create_all()
+        # db.drop_all()
+        db.create_all()
         AppInfo.insert_data()
         User.insert_test_user()
+        Cron.restart_task(cron_scheduler)
 
     register_errors(app)  # 处理异常情况
     register_logger(app)

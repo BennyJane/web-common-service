@@ -108,7 +108,7 @@ class Authenticate(Resource):
         new_token = ""  # 新token
         if need_update_token:
             now_time = datetime.datetime.utcnow()
-            new_token = jwt_manager.encode_token(account, fresh=False, now=now_time)
+            new_token = jwt_manager.encode_token(account, app_id, fresh=False, now=now_time)
         user = User.query.filter_by(app_id=app_id).filter_by(account=account).first()
 
         if app_id is None:

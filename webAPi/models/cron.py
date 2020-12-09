@@ -3,8 +3,10 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/9 0:40
 # Warning    ：The Hard Way Is Easier
+import json
 from webAPi.models import db
 from webAPi.models import Column
+from webAPi.log import web_logger
 from webAPi.models import BaseMixin
 from webAPi.utils.com import produce_id
 
@@ -12,10 +14,37 @@ from webAPi.utils.com import produce_id
 class Cron(db.Model, BaseMixin):
     id = Column(db.String(32), primary_key=True)
     app_id = Column(db.String(32), nullable=False, comment="不同应用的标识id")
-    crontab = Column(db.String(60), default="", comment="任务执行时间配置")
+    crontab = Column(db.TEXT, default="", comment="任务执行时间配置")
     callback_url = Column(db.TEXT, default="")
     next_run_date = Column(db.String(32), default="")
     loop = Column(db.INTEGER, default=0, comment="0:不循环，只执行一次；1:循环")
     status = Column(db.INTEGER, default=0, comment="0:未执行；1： 进行中； 2： 失败； 3： 成功")
     description = Column(db.TEXT, default="")
     try_count = Column(db.INTEGER, default=0, comment="失败重试次数")
+
+    def __init__(self, *args, **kwargs):
+        # 设置id的默认值
+        if kwargs.get('id') is None:
+            kwargs['id'] = produce_id()
+        crontab_value = kwargs.get("crontab")
+        if crontab_value is not None and not isinstance(crontab_value, str):
+            kwargs['crontab'] = json.dumps(crontab_value, ensure_ascii=False)
+        super().__init__(*args, **kwargs)
+
+    def get_params(self):
+        params = {
+            "job_id": self.id,
+            "cron": json.loads(self.crontab),
+            "callback_url": self.callback_url,
+            "loop": self.loop
+        }
+        return params
+
+    @staticmethod
+    def restart_task(scheduler):
+        """项目初始化时，启动所有定时任务"""
+        all_tasks = Cron.query.all()
+        for task in all_tasks:
+            params = task.get_params()
+            scheduler.add_task(params)
+        web_logger.info("重新启动所有定时任务")

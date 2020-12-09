@@ -45,3 +45,17 @@ def request_send_mail(params, domain=None):
 
     else:
         web_logger.info("邮件发送成功！")
+
+
+def cron_date(params):
+    year = params.get("year")
+    month = params.get("month")
+    day = params.get("day")
+    hour = params.get("hour")
+    minute = params.get("minute")
+    second = params.get("second")
+    try:
+        target_date = datetime.datetime(year, month, day, hour, minute, second)
+    except Exception as e:
+        raise Exception("日期格式不正确")
+    return target_date

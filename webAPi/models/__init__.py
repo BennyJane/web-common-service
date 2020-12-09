@@ -33,3 +33,4 @@ from .appInfo import AppInfo
 from .download import Downloading
 from .mail import MailTemplate
 from .stat import ActionLog
+from .cron import Cron
