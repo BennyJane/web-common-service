@@ -42,7 +42,7 @@ class CronScheduler:
 
     def periodic_task(self, params: dict):
         """周期性任务"""
-        valid_date = self.date_validate(params.get("cron"))
+        valid_date = self.get_date(params.get("cron"))
 
         self.scheduler.add_job(
             self.task.request_get,
@@ -73,7 +73,7 @@ class CronScheduler:
         except Exception as e:
             raise Exception(str(e))
 
-    def date_validate(self, params: dict):
+    def get_date(self, params: dict):
         valid_date = {}
         for key, value in params.items():
             if value != '*':
@@ -107,7 +107,7 @@ class CronTask:
             if res.status_code == 200:
                 # TODO 记录任务失败的信息
                 web_logger.debug(f"status_code:{res.status_code} {res.text}")
-            web_logger.info("request get running...")
+            # web_logger.info("request get running...")
         except Exception as e:
             web_logger.info(str(e))
 
