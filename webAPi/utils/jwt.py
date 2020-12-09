@@ -42,7 +42,6 @@ class JWTManager(object):
         self.secret = secret  # 用于JWT编码的盐
         self.token_expire = datetime.timedelta(minutes=expire_date)
         self.fresh_expire = datetime.timedelta(days=fresh_expire_date)
-        # self.fresh_expire = datetime.timedelta(minutes=2)
         self.algorithm = algorithm
         self.auth_header = "Authorization"
         self.token_prefix = "Bearer"

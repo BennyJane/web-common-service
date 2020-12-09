@@ -5,6 +5,7 @@
 # Warning：The Hard Way Is Easier
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from webAPi.utils.jwt import JWTManager
 from webAPi.utils.redis import RedisConn
 from webAPi.utils.cron_libs import CronScheduler
@@ -14,6 +15,7 @@ jwt_manager = JWTManager()
 mail = Mail()
 redis_conn = RedisConn()
 cron_scheduler = CronScheduler()
+csrf = CORS()
 
 
 def register_ext(app):
@@ -23,3 +25,4 @@ def register_ext(app):
     redis_conn.init_app(app)
     cron_scheduler.init_app(app)
     mail.init_app(app)
+    csrf.init_app(app)
