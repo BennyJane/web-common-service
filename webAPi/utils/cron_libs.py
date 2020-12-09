@@ -3,11 +3,14 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/9 1:26
 # Warning    ：The Hard Way Is Easier
+# import atexit
+# import fcntl
+
 import random
 import datetime
 import requests
-from pytz import utc
 from webAPi.log import web_logger
+from webAPi.utils.com import cron_date
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -26,7 +29,8 @@ class CronScheduler:
             jobstores=config.get("JOB_STORES"),
             executors=config.get("JOB_EXECUTORS"),
             job_default=config.get("JOB_DEFAULT"),
-            timezone=utc
+            timezone='Asia/Shanghai'
+            # timezone=utc
         )
         self.scheduler.start()
 
@@ -38,24 +42,22 @@ class CronScheduler:
 
     def periodic_task(self, params: dict):
         """周期性任务"""
+        valid_date = self.date_validate(params.get("cron"))
+
         self.scheduler.add_job(
             self.task.request_get,
+            max_instances=1,  # 同id，允许任务数量
             trigger='cron',
             id=params.get("job_id"),
-            year=params.get("year"),
-            month=params.get("month"),
-            day=params.get("day"),
-            hour=params.get("hour"),
-            minute=params.get("minute"),
-            second=params.get("second"),
             args=(params.get("callback_url"),),
+            **valid_date
         )
-        web_logger.info("add periodic task...")
 
     def one_off_task(self, params: dict):
         """只在指定时间，执行一次的任务"""
         self.scheduler.add_job(
             self.task.request_get,
+            max_instances=1,  # 同id，允许任务数量
             trigger='date',
             run_date=cron_date(params.get("cron")),
             args=(params.get("callback_url"),),
@@ -71,14 +73,43 @@ class CronScheduler:
         except Exception as e:
             raise Exception(str(e))
 
+    def date_validate(self, params: dict):
+        valid_date = {}
+        for key, value in params.items():
+            if value != '*':
+                valid_date[key] = value
+        web_logger.info("[定时任务时间设置]: {}".format(valid_date))
+        return valid_date
+
+    def run(self):
+        """添加锁机制"""
+        # TODO 添加锁机制，解决多线程与多进程下任务重复执行的BUG
+        # f = open("scheduler.lock", "wb")
+        # try:
+        #     fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        #     self.update()
+        #     self.scheduler.start()
+        # except:
+        #     pass
+        #
+        # def unlock():
+        #     fcntl.flock(f, fcntl.LOCK_UN)
+        #     f.close()
+        #
+        # atexit.register(unlock)
+
+
 class CronTask:
 
     def request_get(self, url):
-        res = requests.get(url)
-        if res.status_code == 200:
-            # TODO 记录任务失败的信息
-            web_logger.debug(f"status_code:{res.status_code} {res.text}")
-        print("request get running...")
+        try:
+            res = requests.get(url)
+            if res.status_code == 200:
+                # TODO 记录任务失败的信息
+                web_logger.debug(f"status_code:{res.status_code} {res.text}")
+            web_logger.info("request get running...")
+        except Exception as e:
+            web_logger.info(str(e))
 
     def test_write_file(self):
         number = random.randint(0, 100)

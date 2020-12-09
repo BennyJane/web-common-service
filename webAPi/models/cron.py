@@ -43,8 +43,11 @@ class Cron(db.Model, BaseMixin):
     @staticmethod
     def restart_task(scheduler):
         """项目初始化时，启动所有定时任务"""
+        # FIXME 这块代码在项目启动的时候，被执行了两遍
+        scheduler.scheduler.remove_all_jobs()  # 先删除当前的所有的任务
         all_tasks = Cron.query.all()
+        web_logger.info("重新启动所有定时任务")
+        web_logger.info("当前定时任务数量： {}".format(len(all_tasks)))
         for task in all_tasks:
             params = task.get_params()
             scheduler.add_task(params)
-        web_logger.info("重新启动所有定时任务")

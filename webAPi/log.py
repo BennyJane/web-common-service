@@ -48,9 +48,11 @@ def register_logger(app):
 
 def get_logger(config_name=None):
     if config_name is None:
-        config_name = os.getenv('FLASK_ENV', 'development')
-        if config_name not in projectConfigs.keys():
+        current_env = os.getenv('FLASK_ENV', 'development')
+        if current_env not in projectConfigs.keys():
             config_name = 'development'
+        else:
+            config_name = current_env
     config_object = projectConfigs[config_name]
     log_file_path = config_object.LOG_FILE_PATH
     log_level = config_object.LOG_LEVEL
@@ -61,22 +63,20 @@ def get_logger(config_name=None):
 
     logger.setLevel(log_level)
 
-    if log_file_path:
+    formatter = logging.Formatter(
+        "%(asctime)s [%(module)s.%(filename)s] [%(levelname)s] : %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+    )
+
+    if log_file_path and current_env == 'produce':
         handler = logging.FileHandler(log_file_path)
     elif log_level is None:
         logger.handlers = [logging.NullHandler()]
         return logger
-    else:
+    if current_env == 'development':
         handler = logging.StreamHandler()
 
     handler.setLevel(log_level)
-
-    formatter = logging.Formatter(
-        "%(asctime)s [name] [%(levelname)s] : %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-    )
-
     handler.setFormatter(formatter)
-
     logger.handlers = [handler]
     return logger
 

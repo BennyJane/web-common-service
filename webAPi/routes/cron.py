@@ -46,6 +46,7 @@ class CronTask(Resource):
                                  update_at=cron.update_time_str))
             req.code = 0
             req.data = data
+        # print(cron_scheduler.scheduler.print_jobs())
         return req.result
 
     def post(self):
@@ -102,6 +103,9 @@ class CronTask(Resource):
             target_cron.loop = loop
         if description:
             target_cron.description = description
+        # 删除旧的任务，重新启动
+        cron_scheduler.delete_task(job_id=_id)
+        cron_scheduler.add_task(target_cron.get_params())
         req.code = 0
         db.session.add(target_cron)
         db.session.commit()

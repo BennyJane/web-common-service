@@ -11,6 +11,7 @@ from _compat import root_path as project_root_path
 from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.executors.pool import ProcessPoolExecutor
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 
 class DevelopmentConfig(BaseConfig):
@@ -50,10 +51,12 @@ class DevelopmentConfig(BaseConfig):
         "redis": RedisJobStore(host=REDIS_HOST, port=REDIS_PORT),  # 设置一个名为redis的job存储，后端使用 redis
         # 一个名为 default 的 job 存储，后端使用数据库（使用 Sqlite）
         # "default": SQLAlchemyJobStore(url="sqlite:///jobs.sqlite")
+        "backend_db": SQLAlchemyJobStore(url=SQLALCHEMY_DATABASE_URI)
     }
     JOB_EXECUTORS = {
-        "default": ThreadPoolExecutor(20),  # 设置一个名为 default的线程池执行器， 最大线程设置为20个
-        "processpool": ProcessPoolExecutor(5),  # 设置一个名为 processpool的进程池执行器，最大进程数设为5个
+        "default": ThreadPoolExecutor(10),  # 设置一个名为 default的线程池执行器， 最大线程设置为20个
+        # TODO 线程过多，会出现同一个任务被多次执行的情况
+        "processpool": ProcessPoolExecutor(1),  # 设置一个名为 processpool的进程池执行器，最大进程数设为5个
     }
     # 开启job合并，设置job最大实例上限为3
     JOB_DEFAULT = {
