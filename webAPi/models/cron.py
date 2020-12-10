@@ -4,7 +4,7 @@
 # Time       ：2020/12/9 0:40
 # Warning    ：The Hard Way Is Easier
 import json
-from webAPi.models import db
+from webAPi.extensions import db
 from webAPi.models import Column
 from webAPi.log import web_logger
 from webAPi.models import BaseMixin
@@ -12,6 +12,8 @@ from webAPi.utils.com import produce_id
 
 
 class Cron(db.Model, BaseMixin):
+    __tablename__ = 'cron'
+
     id = Column(db.String(32), primary_key=True)
     app_id = Column(db.String(32), nullable=False, comment="不同应用的标识id")
     crontab = Column(db.TEXT, default="", comment="任务执行时间配置")
@@ -41,13 +43,13 @@ class Cron(db.Model, BaseMixin):
         return params
 
     @staticmethod
-    def restart_task(scheduler):
+    def restart_task(cron_scheduler=None):
         """项目初始化时，启动所有定时任务"""
         # FIXME 这块代码在项目启动的时候，被执行了两遍
-        scheduler.scheduler.remove_all_jobs()  # 先删除当前的所有的任务
+        cron_scheduler.scheduler.remove_all_jobs()  # 先删除当前的所有的任务
         all_tasks = Cron.query.all()
         web_logger.info("重新启动所有定时任务")
         web_logger.info("当前定时任务数量： {}".format(len(all_tasks)))
         for task in all_tasks:
             params = task.get_params()
-            scheduler.add_task(params)
+            cron_scheduler.add_task(params)

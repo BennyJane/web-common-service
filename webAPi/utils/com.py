@@ -3,12 +3,13 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
-
+import json
 import os
 import time
 import hashlib
 import datetime
 import requests
+from config import projectConfigs
 from webAPi.log import web_logger
 
 
@@ -59,3 +60,22 @@ def cron_date(params):
     except Exception as e:
         raise Exception("日期格式不正确")
     return target_date
+
+
+def cron_params(data):
+    params = {
+        "job_id": data[0],
+        "cron": json.loads(data[1]),
+        "callback_url": data[2],
+        "loop": data[3]
+    }
+    return params
+
+
+def get_config_from_env(config_name=None):
+    """根据环境变量获取当前配置信息"""
+    if config_name is None:
+        config_name = os.getenv('FLASK_ENV', 'development')
+        if config_name not in projectConfigs.keys():
+            config_name = 'development'
+    return projectConfigs[config_name]

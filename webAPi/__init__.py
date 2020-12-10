@@ -6,9 +6,7 @@
 import os
 from flask import Flask
 from webAPi.models import *  # 导入所有数据表
-from config import projectConfigs
 from webAPi.extensions import db
-from webAPi.extensions import cron_scheduler
 from webAPi.routes.index import Index
 from webAPi.routes import register_routes_api
 from webAPi.log import register_logger
@@ -16,14 +14,12 @@ from webAPi.extensions import register_ext
 from webAPi.extra import register_extra_api
 from webAPi.errors import register_errors
 from webAPi.utils.decorator import register_before_after
+from webAPi.utils.com import get_config_from_env
 
 
+# TODO 启动Flask的时候，该函数被调用了两次 ==》 运行 flask run
 def create_app(config_name=None):
-    if config_name is None:
-        config_name = os.getenv('FLASK_ENV', 'development')
-        if config_name not in projectConfigs.keys():
-            config_name = 'development'
-    config_object = projectConfigs[config_name]
+    config_object = get_config_from_env(config_name=config_name)
     app = Flask(__name__, static_folder=config_object.UPLOAD_PATH)
     app.config.from_object(config_object)
 
@@ -38,8 +34,10 @@ def create_app(config_name=None):
         db.create_all()
         AppInfo.insert_data()
         User.insert_test_user()
-        Cron.restart_task(cron_scheduler)
+        # Cron.restart_task()
 
     register_errors(app)  # 处理异常情况
     register_logger(app)
+
+    app.logger.info("Flask ==> app ....")
     return app  # todo　必须返回Flask实例

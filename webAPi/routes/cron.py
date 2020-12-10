@@ -28,6 +28,13 @@ class CronTask(Resource):
         """crontab tasks"""
         req = ReqJson()
         app_id = g.app_id
+        action = request.args.get("action")
+        if action == 'restart':
+            request_action = getattr(self, action)
+            request_action()
+            req.code = 0
+            return req.result
+
         crontabs = Cron.query.filter_by(app_id=app_id).all()
         if not crontabs:
             req.code = 0
@@ -38,7 +45,7 @@ class CronTask(Resource):
                 data.append(dict(id=cron.id,
                                  crontab=cron.crontab,
                                  callback_url=cron.callback_url,
-                                 next_run_date=cron.next_run_date,
+                                 next_run_date=cron.next_run_date,  # TODO 根据查询结果显示该数据
                                  loop=cron.loop,
                                  status=cron.status,
                                  description=cron.description,
@@ -46,8 +53,10 @@ class CronTask(Resource):
                                  update_at=cron.update_time_str))
             req.code = 0
             req.data = data
-        # print(cron_scheduler.scheduler.print_jobs())
         return req.result
+
+    def restart(self):
+        Cron.restart_task(cron_scheduler)
 
     def post(self):
         """add task"""

@@ -8,13 +8,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from webAPi.utils.jwt import JWTManager
 from webAPi.utils.redis import RedisConn
+
 from webAPi.utils.cron_libs import CronScheduler
+cron_scheduler = CronScheduler()
 
 db = SQLAlchemy(use_native_unicode='utf8mb4')
 jwt_manager = JWTManager()
 mail = Mail()
 redis_conn = RedisConn()
-cron_scheduler = CronScheduler()
 csrf = CORS()
 
 
@@ -23,6 +24,5 @@ def register_ext(app):
     db.init_app(app)
     jwt_manager.init_app(app)
     redis_conn.init_app(app)
-    cron_scheduler.init_app(app)
     mail.init_app(app)
     csrf.init_app(app)
