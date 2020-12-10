@@ -106,8 +106,9 @@ class CronScheduler:
         # TODO 添加锁机制，解决多线程与多进程下任务重复执行的BUG
         _acquireLock()
         try:
+            # if len(self.scheduler.get_jobs()) == 0:
+            #     self.restart_tasks()
             self.scheduler.start()
-            # self.restart_tasks()
         except Exception as e:
             web_logger.error(e)
         finally:

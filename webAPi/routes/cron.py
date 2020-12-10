@@ -12,6 +12,7 @@ from webAPi.constant import ReqJson
 from webAPi.models.cron import Cron
 from webAPi.extensions import db
 from webAPi.extensions import cron_scheduler
+from webAPi.utils.com import getFormatDate
 
 cron_setting_parse = reqparse.RequestParser()
 # TODO required=True, 会自动抛出异常，但返回接口格式不标准，弃用
@@ -29,6 +30,9 @@ class CronTask(Resource):
         req = ReqJson()
         app_id = g.app_id
         action = request.args.get("action")
+
+        print(cron_scheduler.scheduler.print_jobs())
+
         if action == 'restart':
             request_action = getattr(self, action)
             request_action()
@@ -36,6 +40,12 @@ class CronTask(Resource):
             return req.result
 
         crontabs = Cron.query.filter_by(app_id=app_id).all()
+        all_jobs = cron_scheduler.scheduler.get_jobs()
+        job_next_run_date = {}
+        for job in all_jobs:
+            # print(dir(job))   # 查看job的属性
+            job_next_run_date[job.id] = getFormatDate(job.next_run_time)
+
         if not crontabs:
             req.code = 0
             req.data = []
@@ -45,7 +55,7 @@ class CronTask(Resource):
                 data.append(dict(id=cron.id,
                                  crontab=cron.crontab,
                                  callback_url=cron.callback_url,
-                                 next_run_date=cron.next_run_date,  # TODO 根据查询结果显示该数据
+                                 next_run_date=job_next_run_date.get(cron.id, "未运行"),  # TODO 根据查询结果显示该数据
                                  loop=cron.loop,
                                  status=cron.status,
                                  description=cron.description,
@@ -55,7 +65,8 @@ class CronTask(Resource):
             req.data = data
         return req.result
 
-    def restart(self):
+    # 主要用于展示一种扩展的写法
+    def restart(self):  # 重启所有定时任务
         Cron.restart_task(cron_scheduler)
 
     def post(self):
@@ -68,7 +79,6 @@ class CronTask(Resource):
         loop = front_data.get("loop")
         description = front_data.get("description")
 
-        app_id = g.app_id
         if not cron:
             req.msg = "请输入任务时间配置"
         elif not callback_url:

@@ -3,13 +3,12 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
-import os
 from flask import Flask
 from webAPi.models import *  # 导入所有数据表
 from webAPi.extensions import db
+from webAPi.log import web_logger
 from webAPi.routes.index import Index
 from webAPi.routes import register_routes_api
-from webAPi.log import register_logger
 from webAPi.extensions import register_ext
 from webAPi.extra import register_extra_api
 from webAPi.errors import register_errors
@@ -34,10 +33,8 @@ def create_app(config_name=None):
         db.create_all()
         AppInfo.insert_data()
         User.insert_test_user()
-        # Cron.restart_task()
 
     register_errors(app)  # 处理异常情况
-    register_logger(app)
 
-    app.logger.info("Flask ==> app ....")
+    web_logger.info("Flask ==> app 实例化")
     return app  # todo　必须返回Flask实例
