@@ -4,9 +4,13 @@
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
 import time
+from contextlib import contextmanager
+
 import redis
+import datetime
 from threading import Thread
 
+from webAPi.log import web_logger
 from webAPi.utils.com import request_send_mail
 from webAPi.constant import REDIS_REFRESH_TOKEN_KEY
 from webAPi.constant import REDIS_MAIL_QUEUE
@@ -74,3 +78,18 @@ class RedisConn:
     def add_task(self, target_queue, task):
         """向队列中添加数据"""
         self.conn.lpush(target_queue, task)
+
+
+# 只是保证被锁方法在特定时间段内只执行一次。
+@contextmanager
+def redis_lock(conn, name, timeout=24 * 60 * 60):
+    try:
+        today_string = datetime.datetime.now().strftime("%Y-%m-%d")
+        key = f"servername.lock.{name}.{today_string}"
+        lock = conn.set(key, value=1, nx=True, ex=timeout)
+        yield lock
+    except Exception as e:
+        web_logger.info(e)
+
+    finally:
+        conn.delete(key)  # 释放锁

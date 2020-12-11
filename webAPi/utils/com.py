@@ -79,3 +79,5 @@ def get_config_from_env(config_name=None):
         if config_name not in projectConfigs.keys():
             config_name = 'development'
     return projectConfigs[config_name]
+
+

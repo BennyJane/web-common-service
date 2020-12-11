@@ -8,6 +8,8 @@ from flask import g
 from flask import request
 from flask_restful import reqparse
 from flask_restful import Resource
+
+from webAPi.log import web_logger
 from webAPi.constant import ReqJson
 from webAPi.models.cron import Cron
 from webAPi.extensions import db
@@ -31,7 +33,8 @@ class CronTask(Resource):
         app_id = g.app_id
         action = request.args.get("action")
 
-        print(cron_scheduler.scheduler.print_jobs())
+        # 打印存储的JOB信息
+        cron_scheduler.scheduler.print_jobs()
 
         if action == 'restart':
             request_action = getattr(self, action)
@@ -44,8 +47,10 @@ class CronTask(Resource):
         job_next_run_date = {}
         for job in all_jobs:
             # print(dir(job))   # 查看job的属性
-            job_next_run_date[job.id] = getFormatDate(job.next_run_time)
-
+            try:
+                job_next_run_date[job.id] = getFormatDate(job.next_run_time)
+            except (KeyError, Exception) as e:
+                web_logger.info(e)
         if not crontabs:
             req.code = 0
             req.data = []

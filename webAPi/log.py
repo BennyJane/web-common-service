@@ -25,7 +25,7 @@ def get_logger(config_name=None):
     logger.setLevel(log_level)
 
     formatter = logging.Formatter(
-        "%(asctime)s [%(module)s.%(filename)s] [%(levelname)s] : %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+        "%(asctime)s [%(module)s.%(filename)s %(lineno)s] [%(levelname)s] : %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
 
     if log_file_path and current_env == 'produce':
