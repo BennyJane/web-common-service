@@ -21,7 +21,7 @@ cron_setting_parse = reqparse.RequestParser()
 cron_setting_parse.add_argument('id', type=str, location='json')
 cron_setting_parse.add_argument('cron', type=dict, location='json')
 cron_setting_parse.add_argument('callback_url', type=str, location='json')
-cron_setting_parse.add_argument('loop', type=int, location='json')
+cron_setting_parse.add_argument('loop', type=str, location='json')
 cron_setting_parse.add_argument('description', type=str, location='json')
 
 
@@ -36,7 +36,7 @@ class CronTask(Resource):
         # 打印存储的JOB信息
         cron_scheduler.scheduler.print_jobs()
 
-        if action == 'restart':
+        if action in ['restart', 'clear_all_jobs']:
             request_action = getattr(self, action)
             request_action()
             req.code = 0
@@ -74,6 +74,9 @@ class CronTask(Resource):
     def restart(self):  # 重启所有定时任务
         Cron.restart_task(cron_scheduler)
 
+    def clear_all_jobs(self):
+        cron_scheduler.scheduler.remove_all_jobs()
+
     def post(self):
         """add task"""
         req = ReqJson()
@@ -88,7 +91,7 @@ class CronTask(Resource):
             req.msg = "请输入任务时间配置"
         elif not callback_url:
             req.msg = "请输入回调链接"
-        elif loop not in [0, 1]:
+        elif loop not in ['cron', 'date', 'interval']:
             req.msg = "参数取值超出范围"
         else:
             cron_str = json.dumps(cron, ensure_ascii=False)

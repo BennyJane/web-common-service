@@ -4,13 +4,10 @@
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
 from webAPi import create_app
-from webAPi.extensions import cron_scheduler
 
 # 用于部署启动项目:
 app = create_app()
 config = app.config
-
-cron_scheduler.run()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=config.get("HOST", 5000))

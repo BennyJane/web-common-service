@@ -19,8 +19,8 @@ class Cron(db.Model, BaseMixin):
     crontab = Column(db.TEXT, default="", comment="任务执行时间配置")
     callback_url = Column(db.TEXT, default="")
     next_run_date = Column(db.String(32), default="")
-    loop = Column(db.INTEGER, default=0, comment="0:不循环，只执行一次；1:循环")
-    status = Column(db.INTEGER, default=0, comment="0:未执行；1： 进行中； 2： 失败； 3： 成功")
+    loop = Column(db.String(32), default='cron', comment="date:指定时间执行一次；cron:特定时间定期执行；interval: 按照指定间隔重复执行")
+    status = Column(db.INTEGER, default=0, comment="0:未执行；1： 进行中； 2： 失败； 3： 成功")  # 目前没有使用
     description = Column(db.TEXT, default="")
     try_count = Column(db.INTEGER, default=0, comment="失败重试次数")
 

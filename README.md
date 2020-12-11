@@ -72,7 +72,6 @@ docker-compose up -d
 
 ### TDDO
 
-- 定时任务
-    - 解决分布式运行bug
+
 - 文件上传
     - 添加在线存储方案

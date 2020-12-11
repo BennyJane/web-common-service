@@ -46,17 +46,22 @@ class CronScheduler:
             executors=config.JOB_EXECUTORS,
             job_default=config.JOB_DEFAULT,
             timezone='Asia/Shanghai'
-            # timezone=utc
         )
 
     def init_app(self, app):
-        """绑定实例，读取配置文件: 该方法在多进程下会重复执行任务"""
+        """绑定实例Flask 实例"""
+        app.cron_scheduler = self
+        self.run()
 
     def add_task(self, params: dict):
-        if params.get("loop") == 0:
+        if params.get("loop") == 'date':
             self.one_off_task(params)
-        else:
+        elif params.get('loop') == 'interval':
+            self.interval_task(params)
+        elif params.get('loop') == 'cron':
             self.periodic_task(params)
+        else:
+            web_logger.error("没有找到任务类型")
 
     def periodic_task(self, params: dict):
         """周期性任务"""
@@ -79,6 +84,17 @@ class CronScheduler:
             jobstore='redis',
             max_instances=1,  # 同id，允许任务数量
             trigger='date',
+            run_date=cron_date(params.get("cron")),
+            args=(params.get("callback_url"),),
+        )
+
+    def interval_task(self, params: dict):
+        """按照指定间隔，重复执行任务"""
+        self.scheduler.add_job(
+            self.task.request_get,
+            jobstore='redis',
+            max_instances=1,  # 同id，允许任务数量
+            trigger='interval',
             run_date=cron_date(params.get("cron")),
             args=(params.get("callback_url"),),
         )

@@ -10,8 +10,6 @@ from logging.handlers import RotatingFileHandler
 
 
 # TODO 单独定义邮件发送使用的日志 ==》 不能使用flask自带的日志
-
-
 def get_logger(config_name=None):
     current_env = os.getenv('FLASK_ENV', 'development')
     config = get_config_from_env()
