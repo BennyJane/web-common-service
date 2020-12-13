@@ -11,7 +11,7 @@ from flask_restful import Resource
 
 from webAPi.constant import ReqJson
 from webAPi.models.user import User
-from webAPi.utils.com import setSHA256, CaptchaTool
+from webAPi.utils.com import setSHA256, CaptchaTool, produce_id
 from webAPi.extensions import db
 from webAPi.extensions import redis_conn
 from webAPi.extensions import jwt_manager
@@ -241,11 +241,17 @@ class Captcha(Resource):
     def __init__(self):
         self.req = ReqJson()
         parse = reqparse.RequestParser(bundle_errors=True)
-        parse.add_argument('action', required=True, type=str, location='json')
+        parse.add_argument('action', required=True, type=str, location='json', help="action字段不为空")
+        parse.add_argument('width', type=int, location='json', help="请设置验证码图片宽度")
+        parse.add_argument('height', type=int, location='json', help="请设置验证码图片高度")
         parse.add_argument('code', type=str, location='json')
+        parse.add_argument('key', type=str, location='json')
         front_data = parse.parse_args()
         self.action = front_data.get("action")
         self.code = front_data.get("code")
+        self.key = front_data.get("key")
+        self.width = front_data.get("width")
+        self.height = front_data.get("height")
 
     def get(self):
         """get captcha"""
@@ -260,15 +266,35 @@ class Captcha(Resource):
         return self.req.result
 
     def generate(self):
-        new_captcha = CaptchaTool()
-        img, code = new_captcha.get_verify_code()
-        redis_conn.set(code, code, expire=60 * 3)  # 3分钟过期时间
-        print("captcha ...", code)
-        self.req.data = {"img": img}
+        if not self.width:
+            self.req.msg = "请输入验证码图片宽度"
+        elif not self.height:
+            self.req.msg = "请输入验证码图片高度"
+        else:
+            new_captcha = CaptchaTool()
+            img, code = new_captcha.get_verify_code(self.width, self.height)
+            key = f"captcha:{produce_id()}"
+            redis_conn.set(key, code, expire=10)  # 3分钟过期时间
+            self.req.data = {
+                "key": key,
+                "img": img}
 
     def verify(self):
         """verify captcha"""
+
+        def get_code_by_redis():
+            key = redis_conn.get(self.key)
+            yield from {key for _ in range(3)}  # 生成器表达式
+
+        gen_key = get_code_by_redis()
         if not self.code:
-            self.req.msg = "参数缺失"
-        if redis_conn.get(self.code) == self.code:
-            self.req.msg = "验证失败"
+            self.req.msg = "请输入验证码"
+        elif not self.key:
+            self.req.msg = "请携带验证码关键字"
+        elif not next(gen_key):
+            self.req.msg = "请刷新验证码"
+        elif next(gen_key) != self.code:
+            self.req.msg = "验证码错误"
+        elif next(gen_key) == self.code:
+            self.req.code = 0
+            self.req.msg = "验证通过"

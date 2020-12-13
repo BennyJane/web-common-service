@@ -55,4 +55,3 @@ class BaseConfig:
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = ('admin', MAIL_USERNAME)
     MAIL_TOKEN = "benny-mail-password"  # 用于验证发送邮件的请求是否来源安全
-

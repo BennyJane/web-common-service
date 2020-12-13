@@ -160,22 +160,22 @@ class CaptchaTool(object):
             y2 = random.randint(self.height / 2, self.height)
             self.draw.line(((x1, y1), (x2, y2)), fill='black', width=1)
 
-    def get_verify_code(self):
+    def get_verify_code(self, width, height):
         code = ''.join(random.sample(string.digits, 4))  # 随机生成四个字符
         for item in range(4):
             self.draw.text(
                 (6 + random.randint(-3, 3) + 10 * item, 2 + random.randint(-2, 2)),  # 子位置
                 text=code[item],  # 单个字符
-                file=(random.randint(32, 127),  # 生成随机色彩
+                fill=(random.randint(32, 127),  # 生成随机色彩
                       random.randint(32, 127),
                       random.randint(32, 127)
                       ),
                 font=self.font
             )
-        self.draw_line()  # 绘制干扰线
-        self.img.filter(ImageFilter.GaussianBlur(radius=1.5))  # 绘制高斯干扰线条
-        self.img = self.img.resize((100, 24))  # 重新设置大小
+        # self.draw_line()  # 绘制干扰线
+        # self.img = self.img.filter(ImageFilter.GaussianBlur(radius=0.2))  # 绘制高斯干扰线条
+        self.img = self.img.resize((width, height))  # 重新设置大小
         buffered = io.BytesIO()
         self.img.save(buffered, format="JPEG")
         img_str = b"data:image/png;base64," + base64.b64encode(buffered.getvalue())
-        return img_str, code
+        return img_str.decode('utf-8'), code
