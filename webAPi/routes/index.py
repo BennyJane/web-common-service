@@ -7,9 +7,12 @@
 from flask_restful import Resource
 
 from webAPi.constant import ReqJson
+from webAPi.utils.decorator import WhiteApi
 
 
+@WhiteApi("api")
 class Index(Resource):
+
     def get(self):
         req = ReqJson(
             code=0,

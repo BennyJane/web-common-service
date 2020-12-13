@@ -8,9 +8,13 @@ from flask import Blueprint, current_app
 from flask_restful import Api
 
 from webAPi.errors import restful_errors
+from webAPi.extensions import change_api_response
 
 api_bp = Blueprint('api', __name__)
 resources_api = Api(api_bp, catch_all_404s=False, errors=restful_errors)  # catch_all_404s 必须设置为False
+
+
+# change_api_response(resources_api)
 
 
 # 注册接口的方法完全可以写在该文件中  ==》 可以利用该方法继续拆分resources包
@@ -19,7 +23,7 @@ def register_routes_api(app):
     # FIXME 在该函数中注册 flask-restful api 会失败？？
 
     from webAPi.routes.index import Index
-    resources_api.add_resource(Index, '/')
+    resources_api.add_resource(Index, '/')  # http://127.0.0.1:5000/api/v1/ 末尾必须添加/
 
     from webAPi.routes.auth import Login, Logout, Register, Authenticate, GetTokenByAccount, ChangePassword, AvatarImage
     resources_api.add_resource(Login, '/auth/login')
@@ -45,5 +49,3 @@ def register_routes_api(app):
     from webAPi.routes.cron import CronTask
 
     resources_api.add_resource(CronTask, '/cron/task')
-
-

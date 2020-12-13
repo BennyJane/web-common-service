@@ -3,12 +3,16 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
+from json import dumps
+
 from flask_mail import Mail
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask import current_app
+from flask import make_response
+from flask_sqlalchemy import SQLAlchemy
 from webAPi.utils.jwt import JWTManager
 from webAPi.utils.redis import RedisConn
-
+from flask_restful.utils import PY3
 from webAPi.utils.cron_libs import CronScheduler
 
 mail = Mail()
@@ -27,3 +31,31 @@ def register_ext(app):
     mail.init_app(app)
     csrf.init_app(app)
     cron_scheduler.init_app(app)
+
+
+def change_api_response(flask_api):
+    @flask_api.representation("application/json")
+    def handle_json(data, code, headers):
+
+        print(data, '====================')
+        # 此处为自定义添加: 修改异常返回的格式
+        # **************************
+        if 'message' in data:
+            data = {
+                'message': data['message'],
+                'data': {},
+                'code': 1
+            }
+        # **************************
+
+        settings = current_app.config.get('RESTFUL_JSON', {})
+
+        if current_app.debug:
+            settings.setdefault('indent', 4)
+            settings.setdefault('sort_keys', not PY3)
+
+        dumped = dumps(data, **settings) + "\n"
+
+        resp = make_response(dumped, code)
+        resp.headers.extend(headers or {})
+        return resp

@@ -26,6 +26,7 @@ def login_require():
     view_endpoint = request.endpoint
     # print(view_endpoint)
     # print(WhiteApi.white_apis)
+    print(view_endpoint)
     if view_endpoint in white_api_list or view_endpoint in WhiteApi.white_apis:
         return None
     # 验证token， 提取信息
@@ -94,6 +95,7 @@ class WhiteApi:
 
     def __call__(self, f):
         endpoint = f"{f.__name__}"
+        # print(endpoint, self.blueprint_name)
         if self.blueprint_name is not None:
             # FIXME 提防自定义endpoint的试图函数
             endpoint = f"{self.blueprint_name}.{f.__name__}"
