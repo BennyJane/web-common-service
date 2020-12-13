@@ -4,9 +4,9 @@
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
 import traceback
-from flask import jsonify, current_app
-
-from .constant import ReqJson
+from flask import jsonify
+from flask import current_app
+from webAPi.constant import ReqJson
 
 
 def register_errors(app):
@@ -18,7 +18,7 @@ def register_errors(app):
     app.errorhandler(500)(internal_server_error)
     app.errorhandler(Exception)(allException)  # 全局异常捕获
 
-    app.teardown_request(dealError)
+    app.teardown_request(dealError)  # 未处理异常触发的钩子
 
 
 def bad_request(e):

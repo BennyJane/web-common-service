@@ -12,7 +12,7 @@ class ReqJson:
     data = ResponseDescriptor("data")
     msg = ResponseDescriptor("msg")
 
-    def __init__(self, code=1, data=None, msg=""):
+    def __init__(self, code=-1, data=None, msg=""):
         self.code = code
         self.data = {} if data is None else data
         self.msg = msg

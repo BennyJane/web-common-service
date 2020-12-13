@@ -35,7 +35,7 @@ class RedisConn:
         self.password = config.get('REDIS_PASSWORD')
         self.project_domain = config.get("PROJECT_DOMAIN")
         self.cursor()
-        # 监听邮件事务处理
+        # TODO 监听邮件事务处理 ==> 移动到中间件模块中
         thr = Thread(target=self.listen_mail_task, args=[REDIS_MAIL_QUEUE, ], daemon=True)
         thr.start()
 
@@ -45,6 +45,11 @@ class RedisConn:
         else:
             pool = redis.ConnectionPool(host=self.host, port=self.port)
         self.conn = redis.Redis(connection_pool=pool)
+
+    def set(self, key, value, expire=None):
+        self.conn.set(key, value, ex=expire)
+    def get(self,key):
+        return self.conn.get(key)
 
     def set_refresh_token(self, account, token, expire=60 * 60 * 24 * 7):
         key = REDIS_REFRESH_TOKEN_KEY.format(account)

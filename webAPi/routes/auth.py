@@ -11,10 +11,11 @@ from flask_restful import Resource
 
 from webAPi.constant import ReqJson
 from webAPi.models.user import User
-from webAPi.utils.com import setSHA256
+from webAPi.utils.com import setSHA256, CaptchaTool
 from webAPi.extensions import db
 from webAPi.extensions import redis_conn
 from webAPi.extensions import jwt_manager
+from webAPi.utils.decorator import WhiteApi
 
 login_register_parse = reqparse.RequestParser()
 # TODO required=True, 会自动抛出异常，但返回接口格式不标准，弃用
@@ -136,6 +137,8 @@ class GetTokenByAccount(Resource):
         parse = reqparse.RequestParser(bundle_errors=True)
         parse.add_argument('account', type=str, location='args')
         parse.add_argument('app_id', type=str, location='args')
+        parse.add_argument('test', required=True, type=str, location='json', help="缺少test参数")
+        parse.add_argument('test2', required=True, type=str, location='json', help="缺少test参数")
         front_data = parse.parse_args()
         account = front_data.get("account")
         app_id = front_data.get("app_id")
@@ -230,3 +233,42 @@ class AvatarImage(Resource):  # 生成头像存储在本地？ 还是存储在�
 
     def get(self):
         """get avatar"""
+
+
+@WhiteApi("api")
+class Captcha(Resource):
+
+    def __init__(self):
+        self.req = ReqJson()
+        parse = reqparse.RequestParser(bundle_errors=True)
+        parse.add_argument('action', required=True, type=str, location='json')
+        parse.add_argument('code', type=str, location='json')
+        front_data = parse.parse_args()
+        self.action = front_data.get("action")
+        self.code = front_data.get("code")
+
+    def get(self):
+        """get captcha"""
+        # target_action = getattr(self, self.action)
+        if self.action == 'verify' and hasattr(self, self.action):
+            getattr(self, self.action)()  # TODO 需要检测是否可执行
+        elif self.action == 'generate' and hasattr(self, self.action):
+            getattr(self, self.action)()
+        else:
+            self.req.msg = "请求方法不存在"
+
+        return self.req.result
+
+    def generate(self):
+        new_captcha = CaptchaTool()
+        img, code = new_captcha.get_verify_code()
+        redis_conn.set(code, code, expire=60 * 3)  # 3分钟过期时间
+        print("captcha ...", code)
+        self.req.data = {"img": img}
+
+    def verify(self):
+        """verify captcha"""
+        if not self.code:
+            self.req.msg = "参数缺失"
+        if redis_conn.get(self.code) == self.code:
+            self.req.msg = "验证失败"

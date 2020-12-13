@@ -3,18 +3,24 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
+import json
 
 from flask import g
 from flask import request
+from flask import jsonify
 from flask import current_app
+
+from webAPi import web_logger
 from webAPi.constant import ReqJson
 from webAPi.models.user import User
 from webAPi.extensions import redis_conn
 from webAPi.extensions import jwt_manager
+from webAPi.utils.com import get_error_message_by_flask_restful
 
 
 def register_before_after(app):
     app.before_request(login_require)  # 直接使用装饰器函数
+    app.after_request(change_req)  # 请求成功，请求后触发的钩子函数
 
 
 # 视图窗口验证
@@ -95,9 +101,24 @@ class WhiteApi:
 
     def __call__(self, f):
         endpoint = f"{f.__name__}"
-        # print(endpoint, self.blueprint_name)
+        print(endpoint, self.blueprint_name)
         if self.blueprint_name is not None:
             # FIXME 提防自定义endpoint的试图函数
             endpoint = f"{self.blueprint_name}.{f.__name__}"
         self.white_apis.append(endpoint.lower())
         return f
+
+
+def change_req(response):
+    """修改flask-restful扩展包的返回josn格式
+    默认异常格式：
+    {'message': {'test': 'Missing required parameter in the JSON body'}}
+    """
+    if response.status_code != 200:
+        try:
+            result = get_error_message_by_flask_restful(response)
+        except Exception as e:
+            web_logger.info(e)
+        else:
+            return jsonify(result)
+    return response

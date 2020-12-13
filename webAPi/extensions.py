@@ -9,7 +9,10 @@ from flask_mail import Mail
 from flask_cors import CORS
 from flask import current_app
 from flask import make_response
+from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
+
+from webAPi.utils.com import error_router
 from webAPi.utils.jwt import JWTManager
 from webAPi.utils.redis import RedisConn
 from flask_restful.utils import PY3
@@ -31,6 +34,10 @@ def register_ext(app):
     mail.init_app(app)
     csrf.init_app(app)
     cron_scheduler.init_app(app)
+
+
+# 重写error_router类方法，修改flask-restful内部处理异常的返回格式
+Api.error_router = error_router
 
 
 def change_api_response(flask_api):
