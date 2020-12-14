@@ -55,3 +55,14 @@ class BaseConfig:
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = ('admin', MAIL_USERNAME)
     MAIL_TOKEN = "benny-mail-password"  # 用于验证发送邮件的请求是否来源安全
+
+    # 阿里云短信业务配置信息
+    SMS_ACCESS_KEY_ID = "128548974",  # key ID
+    SMS_ACCESS_KEY_SECRET = "323232",  # 密钥
+    SMS_SIGN_NAME = "设置签名",  # 签名
+    AUTHENTICATION = "SMS_1551323",  # 身份验证模板编码
+    LOGIN_CONFIRMATION = "SMS_155546",  # 登陆确认模板编码
+    LOGIN_EXCEPTION = "SMS_1556546",  # 登陆异常模板编码
+    USER_REGISTRATION = "SMS_1551654625",  # 用户注册模板编码
+    CHANGE_PASSWORD = "SMS_155126456",  # 修改密码模板编码
+    INFORMATION_CHANGE = "SMS_1551265463",  # 信息修改模板编码

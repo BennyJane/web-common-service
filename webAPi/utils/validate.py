@@ -60,3 +60,10 @@ class Regexp(object):
                     msg = self.msg
             raise Exception(msg)
         return match
+
+
+def validate_phone(phone):
+    # TODO 优化手机号码检测方法
+    phone_validate = Regexp(regex=r"^1[3-9][0-9{9}]$", msg="手机格式不正确")
+    re_phone = phone_validate(phone)  # 验证手机号，并返回匹配到的号码
+    return re_phone

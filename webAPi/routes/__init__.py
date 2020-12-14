@@ -7,14 +7,13 @@
 from flask import Blueprint
 
 from webAPi.extensions import Api
-from webAPi.errors import restful_errors
 
 api_bp = Blueprint('api', __name__)
 
 
 # 注册接口的方法完全可以写在该文件中  ==》 可以利用该方法继续拆分resources包
 def register_routes_api(app):
-    resources_api = Api(api_bp, catch_all_404s=False, errors=restful_errors)  # catch_all_404s 必须设置为False
+    resources_api = Api(api_bp, catch_all_404s=False)  # catch_all_404s 必须设置为False
     app.register_blueprint(api_bp, url_prefix='/api/v1')  # api必须先绑定蓝图，然后再在flask实例上注册蓝图，顺序不能变
 
     from webAPi.routes.index import Index
@@ -40,11 +39,12 @@ def register_routes_api(app):
     resources_api.add_resource(UpdateFileConf, '/media/update/file/conf')
 
     from webAPi.routes.mail import MailConf, SimpleSendMail, AddMail
-
     resources_api.add_resource(MailConf, '/mail/templates')
     resources_api.add_resource(AddMail, '/mail/task')
     resources_api.add_resource(SimpleSendMail, '/mail/task/execute')
 
     from webAPi.routes.cron import CronTask
-
     resources_api.add_resource(CronTask, '/cron/task')
+
+    from webAPi.routes.sms import Sms
+    resources_api.add_resource(Sms, "/sms")

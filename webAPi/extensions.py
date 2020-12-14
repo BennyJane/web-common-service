@@ -38,31 +38,3 @@ def register_ext(app):
 
 # 重写error_router类方法，修改flask-restful内部处理异常的返回格式
 Api.error_router = error_router
-
-
-def change_api_response(flask_api):
-    @flask_api.representation("application/json")
-    def handle_json(data, code, headers):
-
-        print(data, '====================')
-        # 此处为自定义添加: 修改异常返回的格式
-        # **************************
-        if 'message' in data:
-            data = {
-                'message': data['message'],
-                'data': {},
-                'code': 1
-            }
-        # **************************
-
-        settings = current_app.config.get('RESTFUL_JSON', {})
-
-        if current_app.debug:
-            settings.setdefault('indent', 4)
-            settings.setdefault('sort_keys', not PY3)
-
-        dumped = dumps(data, **settings) + "\n"
-
-        resp = make_response(dumped, code)
-        resp.headers.extend(headers or {})
-        return resp

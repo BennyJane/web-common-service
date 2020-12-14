@@ -48,8 +48,15 @@ class RedisConn:
 
     def set(self, key, value, expire=None):
         self.conn.set(key, value, ex=expire)
-    def get(self,key):
+
+    def get(self, key):
         return self.conn.get(key)
+
+    def hset(self, key, field, value):
+        self.conn.hset(key, field, value)
+
+    def hget(self, key):
+        self.conn.hget(key)
 
     def set_refresh_token(self, account, token, expire=60 * 60 * 24 * 7):
         key = REDIS_REFRESH_TOKEN_KEY.format(account)

@@ -54,7 +54,7 @@ class Login(Resource):
     def post(self):
         """login"""
         req = ReqJson()  # 预设登录失败的情况， 缩减代码量
-        # TODO required=True, 会自动抛出异常，但返回接口格式不标准，弃用
+        # 会自动抛出异常，但返回接口格式不标准，弃用 ==> 已经解决接口格式BUG，required参数可以直接使用
         front_data = login_register_parse.parse_args()
         account = front_data.get('account')
         app_id = front_data.get('app_id')
@@ -84,7 +84,6 @@ class Login(Resource):
             req.code = 0
             req.data = {
                 "access_token": access_token,
-                # "refresh_token": refresh_token,   # 刷新token存储在redis中，不需要返回
                 "user": {
                     "id": user.id,
                     "app_id": user.app_id,
@@ -102,7 +101,6 @@ class Authenticate(Resource):
         """authenticate"""
         req = ReqJson()
         # 自定义token解析
-        # parse.add_argument('Authorization', type=str, help='请携带token', location=['headers', 'args'])
         token_info, need_update_token = jwt_manager.verify_jwt(redis_conn=redis_conn)
         account = token_info['identity']
         app_id = token_info['appId']
@@ -118,6 +116,7 @@ class Authenticate(Resource):
             req.msg = "账号不存在"
         else:
             req.code = 0
+            req.msg = "token验证通过"
             req.data = {
                 "id": user.id,
                 "app_id": user.app_id,
@@ -126,7 +125,6 @@ class Authenticate(Resource):
                 "created_at": user.create_time_str,
                 "update_token": new_token
             }
-            req.msg = "token验证通过"
         return req.result
 
 
@@ -154,12 +152,13 @@ class GetTokenByAccount(Resource):
         elif user.status is None:
             req.msg = "该账号已被禁用"
         else:
+            req.code = 0
+
             now_time = datetime.datetime.utcnow()  # 这里必须使用utcnow 时间， 不能使用now
             access_token = jwt_manager.encode_token(account, fresh=True, now=now_time)
             refresh_token = jwt_manager.encode_fresh_token(account, now=now_time)
             redis_conn.set_refresh_token(account=account, token=refresh_token)
 
-            req.code = 0
             req.data = {
                 "token": access_token,
                 "user": {

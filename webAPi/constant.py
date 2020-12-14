@@ -24,6 +24,8 @@ UPLOAD_FILE_BASE_CONF = {
 
 REDIS_MAIL_QUEUE = "mail:produce:queue"  # 邮件队列的键名称
 REDIS_MAIL_INTERVAL = 2  # 邮件发送的时间间隔
+
+PHONE_CODE_LENGTH = 6  # 断线验证长度
 REDIS_PHONE_CODE = "phone:code:{}"  # 短信验证码的键名称
 REDIS_PHONE_CODE_EX = 60 * 5  # 短信验证码过期时间： 5分钟
 REDIS_PHONE_LAST_TIME = "last_send_timestamp"  # 前一次发送短信的时间

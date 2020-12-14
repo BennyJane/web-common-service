@@ -15,8 +15,10 @@ TODO： 将ReqJson类功能直接添加到BaseApi内，使用self.result 直接�
 
 class BaseApi(Resource):
     """custom a base class for the api interface"""
+    method_decorators = []  # 装饰器
 
-    req = ReqJson()
+    def __init__(self):
+        self.req = ReqJson()
 
     @property
     def req_json(self):

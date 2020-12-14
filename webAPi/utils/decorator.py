@@ -11,7 +11,7 @@ from flask import jsonify
 from flask import current_app
 
 from webAPi import web_logger
-from webAPi.constant import ReqJson
+from webAPi.response import ReqJson
 from webAPi.models.user import User
 from webAPi.extensions import redis_conn
 from webAPi.extensions import jwt_manager
