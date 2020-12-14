@@ -11,7 +11,7 @@ from sqlalchemy import and_
 from flask_restful import Resource
 from flask_restful import reqparse
 
-from webAPi.constant import ReqJson
+from webAPi.response import ReqJson
 from webAPi.constant import REDIS_MAIL_QUEUE
 from webAPi.models.mail import MailTemplate
 from webAPi.extensions import db

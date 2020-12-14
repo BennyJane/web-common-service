@@ -11,7 +11,7 @@ from webAPi.extensions import db
 from flask import send_from_directory
 from flask_restful import Resource
 from flask_restful import reqparse
-from webAPi.constant import ReqJson
+from webAPi.response import ReqJson
 from webAPi.utils.decorator import WhiteApi
 from webAPi.utils.load_libs import SimpleUpload
 from webAPi.models.appInfo import AppInfo

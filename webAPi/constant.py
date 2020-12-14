@@ -3,32 +3,6 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
-from webAPi.utils.descriptor import ResponseDescriptor
-
-
-class ReqJson:
-    # 使用描述符管理实例属性
-    code = ResponseDescriptor("code")
-    data = ResponseDescriptor("data")
-    msg = ResponseDescriptor("msg")
-
-    def __init__(self, code=-1, data=None, msg=""):
-        self.code = code
-        self.data = {} if data is None else data
-        self.msg = msg
-
-    @property
-    def result(self):
-        return {
-            "code": self.code,
-            "data": self.data,
-            "msg": self.msg,
-        }
-
-
-class HttpCode:
-    """"""
-
 
 REDIS_REFRESH_TOKEN_KEY = "{}:refresh_token"
 
@@ -50,3 +24,7 @@ UPLOAD_FILE_BASE_CONF = {
 
 REDIS_MAIL_QUEUE = "mail:produce:queue"  # 邮件队列的键名称
 REDIS_MAIL_INTERVAL = 2  # 邮件发送的时间间隔
+REDIS_PHONE_CODE = "phone:code:{}"  # 短信验证码的键名称
+REDIS_PHONE_CODE_EX = 60 * 5  # 短信验证码过期时间： 5分钟
+REDIS_PHONE_LAST_TIME = "last_send_timestamp"  # 前一次发送短信的时间
+REDIS_PHONE_TIME_GAP = 60  # 对于同一个手机号，两次短信发送间隔1分钟

@@ -9,7 +9,7 @@ from flask import current_app
 from flask_restful import reqparse
 from flask_restful import Resource
 
-from webAPi.constant import ReqJson
+from webAPi.response import ReqJson
 from webAPi.models.user import User
 from webAPi.utils.com import setSHA256, CaptchaTool, produce_id
 from webAPi.extensions import db
@@ -274,7 +274,7 @@ class Captcha(Resource):
             new_captcha = CaptchaTool()
             img, code = new_captcha.get_verify_code(self.width, self.height)
             key = f"captcha:{produce_id()}"
-            redis_conn.set(key, code, expire=10)  # 3分钟过期时间
+            redis_conn.set(key, code, expire=60 * 3)  # 3分钟过期时间
             self.req.data = {
                 "key": key,
                 "img": img}

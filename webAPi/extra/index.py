@@ -5,7 +5,7 @@
 # Warning：The Hard Way Is Easier
 from flask_restful import Resource
 
-from webAPi.constant import ReqJson
+from webAPi.response import ReqJson
 from webAPi.utils.decorator import WhiteApi
 
 

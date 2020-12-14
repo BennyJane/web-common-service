@@ -10,7 +10,7 @@ from flask_restful import reqparse
 from flask_restful import Resource
 
 from webAPi.log import web_logger
-from webAPi.constant import ReqJson
+from webAPi.response import ReqJson
 from webAPi.models.cron import Cron
 from webAPi.extensions import db
 from webAPi.extensions import cron_scheduler

@@ -3,25 +3,22 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
-import base64
 import io
 import os
-import string
-import time
 import json
+import time
+import string
+import base64
 import random
 import hashlib
 import datetime
-
 import requests
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
-from PIL import ImageFilter
-
 from webAPi.log import web_logger
 from config import projectConfigs
-from webAPi.constant import ReqJson
+from webAPi.response import ReqJson
 
 
 def produce_id():
@@ -128,7 +125,6 @@ def error_router(self, original_handler, e):
 def get_error_message_by_flask_restful(res):
     req = ReqJson()
     res = json.loads(res.data)
-    print("res", res)
     msg = res.get("message", "")
     if isinstance(msg, dict):
         req.msg = '; '.join([i for i in msg.values()])
