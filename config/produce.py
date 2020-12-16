@@ -19,7 +19,7 @@ class ProduceConfig(BaseConfig):
     PROJECT_PORT = 5000
     PROJECT_DOMAIN = f"http://localhost:{PROJECT_PORT}"
 
-    # SQLALCHEMY_DATABASE_URI = prefix + os.path.join(project_root_path, 'data-produce.db')
+    # SQLALCHEMY_DATABASE_URI = prefix + os.path.join(project_root_path, 'data-dev.db')
     MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
     SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://root:{MYSQL_PASSWORD}@127.0.0.1:13306/common_web_service?charset=utf8mb4'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -35,7 +35,12 @@ class ProduceConfig(BaseConfig):
     REDIS_PORT = 6379
     REDIS_PASSWORD = None
 
-    # 日志配置
+    # 测试账号
+    TEST_APP_ID = 'dc601e113be8a2e622f9f9a3f363eb93'
+    TEST_ACCOUNT = '15845623256'
+    TEST_PASSWORD = '8b18762706f0c6854d967b6bb36a97df318654f44b9fe007078149759f25f9d2'  # aaasss123
+
+    # 日志配置: 线上需要重新设置
     LOG_FILE_PATH = os.path.join(project_root_path, modifyPath('logs/api/web_common.log'))
     LOG_LEVEL = logging.DEBUG
     LOG_FILE_SIZE = 10 * 1204 * 1024
@@ -49,8 +54,9 @@ class ProduceConfig(BaseConfig):
         "backend_db": SQLAlchemyJobStore(url=SQLALCHEMY_DATABASE_URI)
     }
     JOB_EXECUTORS = {
-        "default": ThreadPoolExecutor(20),  # 设置一个名为 default的线程池执行器， 最大线程设置为20个
-        "processpool": ProcessPoolExecutor(4),  # 设置一个名为 processpool的进程池执行器，最大进程数设为5个
+        "default": ThreadPoolExecutor(1),  # 设置一个名为 default的线程池执行器， 最大线程设置为20个
+        # TODO 线程过多，会出现同一个任务被多次执行的情况
+        "processpool": ProcessPoolExecutor(1),  # 设置一个名为 processpool的进程池执行器，最大进程数设为5个
     }
     # 开启job合并，设置job最大实例上限为3
     JOB_DEFAULT = {
