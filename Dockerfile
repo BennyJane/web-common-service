@@ -3,11 +3,14 @@ FROM python:3.6.4
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-ADD ./requirement.txt /usr/src/app/requirement.txt
+COPY . /usr/src/app
 
-RUN pip install -r requirement.txt
+RUN pip install -U pip -i https://pypi.tuna.tsinghua.edu.cn/simple \
+    && pip install -U setuptools -i https://pypi.tuna.tsinghua.edu.cn/simple \
+    && pip install gunicorn -i https://pypi.tuna.tsinghua.edu.cn/simple \
+    && pip install gevent -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-ADD . /usr/src/app
+RUN pip install --no-cache-dir -r requirement.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-CMD python main.py
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "main:app"]
 

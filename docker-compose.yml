@@ -6,6 +6,13 @@ services:
     container_name: common-service
     build: ./
     volumes:
-    - ".:/usr/src/app"
+      - ".:/usr/src/app"
     ports:
-    - 5000:5000
+      - "8020:8020"
+    environment:
+      # 从.env 文件读取
+      FLASK_ENV:
+      FLASK_APP:
+      SQLALCHEMY_DATABASE_URI:
+      FLASK_SECRET:
+      WEBHOOK:
