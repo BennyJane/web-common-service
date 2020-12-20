@@ -6,6 +6,7 @@
 import os
 import logging
 from config import get_config_from_env
+from _compat import modifyPath
 from logging.handlers import RotatingFileHandler
 
 
@@ -26,6 +27,8 @@ def get_logger(config_name=None):
         "%(asctime)s [%(module)s.%(filename)s %(lineno)s] [%(levelname)s] : %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
 
+    if not os.path.exists(modifyPath(log_file_path)):
+        os.makedirs(log_file_path)
     if log_file_path and current_env == 'produce':
         handler = RotatingFileHandler(log_file_path, maxBytes=log_file_size, backupCount=log_file_count)
     elif log_level is None:
