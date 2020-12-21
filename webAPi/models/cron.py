@@ -8,13 +8,13 @@ from webAPi.extensions import db
 from webAPi.models import Column
 from webAPi.log import web_logger
 from webAPi.models import BaseMixin
+from webAPi.models import BaseModel
 from webAPi.utils.com import produce_id
 
 
-class Cron(db.Model, BaseMixin):
+class Cron(BaseModel, BaseMixin):
     __tablename__ = 'cron'
 
-    id = Column(db.String(32), primary_key=True)
     app_id = Column(db.String(32), nullable=False, comment="不同应用的标识id")
     crontab = Column(db.TEXT, default="", comment="任务执行时间配置")
     callback_url = Column(db.TEXT, default="")
@@ -26,8 +26,6 @@ class Cron(db.Model, BaseMixin):
 
     def __init__(self, *args, **kwargs):
         # 设置id的默认值
-        if kwargs.get('id') is None:
-            kwargs['id'] = produce_id()
         crontab_value = kwargs.get("crontab")
         if crontab_value is not None and not isinstance(crontab_value, str):
             kwargs['crontab'] = json.dumps(crontab_value, ensure_ascii=False)

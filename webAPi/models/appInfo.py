@@ -8,6 +8,7 @@ from flask import g
 from collections import namedtuple
 from webAPi.extensions import db
 from webAPi.models import Column
+from webAPi.models import BaseModel
 from webAPi.models import BaseMixin
 from webAPi.utils.com import produce_id
 from webAPi.constant import UPLOAD_FILE_BASE_CONF
@@ -15,10 +16,9 @@ from webAPi.constant import UPLOAD_FILE_BASE_CONF
 APP_INFO = namedtuple('app_info', 'id name brief status conf')
 
 
-class AppInfo(db.Model, BaseMixin):
+class AppInfo(BaseModel, BaseMixin):
     __tablename__ = 'app_info'
     __table_args__ = {'mysql_engine': 'InnoDB'}  # 支持事务操作和外键
-    id = Column(db.String(32), primary_key=True)
     name = Column(db.String(255), nullable=False, comment="应用名称")
     brief = Column(db.Text, nullable=False, comment="应用简介")
     status = Column(db.Integer, default=0, comment="应用状态：0 可用/1 不可用")
