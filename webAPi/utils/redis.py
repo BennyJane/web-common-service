@@ -101,13 +101,10 @@ def redis_lock(conn, name, timeout=24 * 60 * 60):
         yield lock  # 新增键会返回True; 键已存在，返回None
     except KeyError as e:  # 捕获未获取锁的异常
         web_logger.info(e)
-        return
+        return  # 不执行 try...except 结构外的代码
     except Exception as e:  # 捕获获取锁，但执行过程中报错的情况
         web_logger.debug(e)
     web_logger.info("释放锁 ...")
     conn.delete(key)  # 释放锁，只有获取锁的线程才需要释放锁
 
-    # 这里不能使用 finally来释放锁，导致未获取锁的线程，也可以释放锁
-    # finally:
-    #     web_logger.info("释放锁 ...")
-    #     conn.delete(key)  # 释放锁，只有获取锁的线程才需要释放锁
+    # 这里不能使用 finally来释放锁，导致未获取锁的线程，也可以释放锁： 无论try中什么情况，finally一定执行
