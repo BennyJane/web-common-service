@@ -153,15 +153,14 @@ class CronTask:
         with redis_lock(redis_conn.conn, "request_get") as lock:
             # 使用redis锁，确保任务触发时，该方法只执行一次，因为只有一个线程能执行成功
             if not lock:
-                return
-            try:
-                res = requests.get(url)
-                if res.status_code == 200:
-                    # TODO 记录任务失败的信息
-                    web_logger.debug(f"status_code:{res.status_code} {res.text}")
-                web_logger.info("request get running...")
-            except Exception as e:
-                web_logger.info(e)
+                raise KeyError("文件对象已被占用")
+            web_logger.info("获取锁 ...")
+            # redis_lock 中已经捕获异常，所以这里不需要再写try...except
+            res = requests.get(url)
+            if res.status_code == 200:
+                # TODO 记录任务失败的信息
+                web_logger.debug(f"status_code:{res.status_code} {res.text}")
+            web_logger.info("request get running...")
 
     def test_write_file(self):
         number = random.randint(0, 100)

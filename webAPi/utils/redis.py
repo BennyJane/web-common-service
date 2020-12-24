@@ -35,9 +35,8 @@ class RedisConn:
         self.password = config.get('REDIS_PASSWORD')
         self.project_domain = config.get("PROJECT_DOMAIN")
         self.cursor()
-        # TODO 监听邮件事务处理 ==> 移动到中间件模块中
-        thr = Thread(target=self.listen_mail_task, args=[REDIS_MAIL_QUEUE, ], daemon=True)
-        thr.start()
+        # 监听邮件事务处理 ==> 移动到中间件模块中
+        Thread(target=self.listen_mail_task, args=[REDIS_MAIL_QUEUE, ], daemon=True).start()
 
     def cursor(self):
         if self.password:
@@ -99,9 +98,16 @@ def redis_lock(conn, name, timeout=24 * 60 * 60):
         today_string = datetime.datetime.now().strftime("%Y-%m-%d")
         key = f"servername.lock.{name}.{today_string}"
         lock = conn.set(key, value=1, nx=True, ex=timeout)
-        yield lock
-    except Exception as e:
+        yield lock  # 新增键会返回True; 键已存在，返回None
+    except KeyError as e:  # 捕获未获取锁的异常
         web_logger.info(e)
+        return
+    except Exception as e:  # 捕获获取锁，但执行过程中报错的情况
+        web_logger.debug(e)
+    web_logger.info("释放锁 ...")
+    conn.delete(key)  # 释放锁，只有获取锁的线程才需要释放锁
 
-    finally:
-        conn.delete(key)  # 释放锁
+    # 这里不能使用 finally来释放锁，导致未获取锁的线程，也可以释放锁
+    # finally:
+    #     web_logger.info("释放锁 ...")
+    #     conn.delete(key)  # 释放锁，只有获取锁的线程才需要释放锁

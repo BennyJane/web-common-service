@@ -27,6 +27,7 @@ class Sms(Resource):
     # authentication: 身份验证
     # login_confirmation: 登陆验证
     # login_exception: 登陆异常
+    # login_exception: redis_lock登陆异常
     # user_registration: 用户注册
     # change_password: 修改密码
     # information_change: 信息修改
