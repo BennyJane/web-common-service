@@ -7,6 +7,7 @@ import os
 import logging
 from dotenv import load_dotenv
 from .base import BaseConfig
+from _compat import win
 from _compat import modifyPath
 from _compat import root_path as project_root_path
 from apscheduler.jobstores.redis import RedisJobStore
@@ -16,27 +17,26 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 load_dotenv(".env")
 
-class DevelopmentConfig(BaseConfig):
-    # 本项目使用的域名与端口号
-    PROJECT_PORT = 5000
-    PROJECT_DOMAIN = f"http://localhost:{PROJECT_PORT}"
+if win:
+    prefix = 'sqlite:///'
+else:
+    prefix = 'sqlite:////'
 
-    # SQLALCHEMY_DATABASE_URI = prefix + os.path.join(project_root_path, 'data-dev.db')
-    MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
-    SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://root:{MYSQL_PASSWORD}@127.0.0.1:13306/common_web_service?charset=utf8mb4'
+
+class DevelopmentConfig(BaseConfig):
+    # MYSQL数据链接
+    SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
+    if not SQLALCHEMY_DATABASE_URI:  # 没有添加mysql数据库连接时，创建sqlite数据库连接
+        SQLALCHEMY_DATABASE_URI = prefix + os.path.join(project_root_path, 'data-dev.db')
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENCODING = "utf8mb4"
 
-    # 添加celery配置
-    broker_url = 'redis://localhost:6379'
-    result_backend = 'redis://localhost:6379'
-    imports = ('proStruct.services.tasks')
-
-    # 配置redis
-    REDIS_HOST = '127.0.0.1'
-    REDIS_PORT = 6379
-    REDIS_PASSWORD = None
-    REDIS_DB = None
+    # 配置redis链接  带密码： redis://[:password]@127.0.0.1:6379/0
+    REDIS_URI = os.getenv("REDIS_URI")
+    if not REDIS_URI:
+        # 本地redis连接URI
+        REDIS_URI = f'redis://:life123456@127.0.0.1:6379/1'
 
     # 测试账号
     TEST_APP_ID = 'dc601e113be8a2e622f9f9a3f363eb93'
@@ -49,9 +49,14 @@ class DevelopmentConfig(BaseConfig):
     LOG_FILE_SIZE = 10 * 1204 * 1024
     LOG_FILE_COUNT = 10
 
-    # apscheduler 定时任务调度配置
+    """
+    ====================================================================================================================
+    添加apscheduler定时任务调度配置
+    ====================================================================================================================
+    """
     JOB_STORES = {
-        "redis": RedisJobStore(host=REDIS_HOST, port=REDIS_PORT),  # 设置一个名为redis的job存储，后端使用 redis
+        # "redis": RedisJobStore(host=REDIS_HOST, port=REDIS_PORT),  # 设置一个名为redis的job存储，后端使用 redis
+        "redis": RedisJobStore(url=REDIS_URI),  # 设置一个名为redis的job存储，后端使用 redis
         # 一个名为 default 的 job 存储，后端使用数据库（使用 Sqlite）
         # "default": SQLAlchemyJobStore(url="sqlite:///jobs.sqlite")
         "backend_db": SQLAlchemyJobStore(url=SQLALCHEMY_DATABASE_URI)
@@ -66,3 +71,12 @@ class DevelopmentConfig(BaseConfig):
         'coalesce': False,
         'max_instances': 3
     }
+
+    """
+    ====================================================================================================================
+    添加celery配置
+    ====================================================================================================================
+    """
+    broker_url = 'redis://localhost:6379'
+    result_backend = 'redis://localhost:6379'
+    imports = ('proStruct.services.tasks')

@@ -19,11 +19,7 @@ from webAPi.constant import REDIS_MAIL_INTERVAL
 
 # TODO 实现单例模式，确保redis实例只实例化了一次
 class RedisConn:
-    def __init__(self, host='127.0.0.1', port=6379, password='', db=0):
-        self.host = host
-        self.port = port
-        self.password = password
-        self.db = db
+    def __init__(self):
         self.conn = None
 
         # 邮件任务配置项
@@ -31,21 +27,9 @@ class RedisConn:
 
     def init_app(self, app):
         config = app.config
-        self.host = config.get('REDIS_HOST')
-        self.port = config.get('REDIS_PORT')
-        self.db = config.get('REDIS_DB') or 0
-        self.password = config.get('REDIS_PASSWORD')
-        self.project_domain = config.get("PROJECT_DOMAIN")
-        self.cursor()
-        # 监听邮件事务处理 ==> 移动到中间件模块中
+        pools = redis.ConnectionPool.from_url(config.get("REDIS_URI"))
+        self.conn = redis.Redis(connection_pool=pools)  # 监听邮件事务处理 ==> 移动到中间件模块中
         Thread(target=self.listen_mail_task, args=[REDIS_MAIL_QUEUE, ], daemon=True).start()
-
-    def cursor(self):
-        if self.password:
-            pool = redis.ConnectionPool(host=self.host, port=self.port, password=self.password, db=self.db)
-        else:
-            pool = redis.ConnectionPool(host=self.host, port=self.port)
-        self.conn = redis.Redis(connection_pool=pool)
 
     def set(self, key, value, expire=None):
         self.conn.set(key, value, ex=expire)
