@@ -15,4 +15,6 @@ services:
       FLASK_APP:
       SQLALCHEMY_DATABASE_URI:
       FLASK_SECRET:
-      WEBHOOK:
+      MAIL_SERVER:
+      MAIL_USERNAME:
+      MAIL_PASSWORD:

@@ -35,7 +35,7 @@ class CronScheduler:
         conf = {  # redis配置
             "host": config.REDIS_HOST,
             "port": config.REDIS_PORT,
-            "db": 15,  # 连接15号数据库
+            "db": 1,  # 连接1号数据库
             "max_connections": 10  # redis最大支持300个连接数
         }
         job_stores = {
@@ -125,10 +125,10 @@ class CronScheduler:
         """添加锁机制"""
         # TODO 添加锁机制，解决多线程与多进程下任务重复执行的BUG
         try:
-            self.scheduler.start()  # 使用 redis存储后，任务后自动重启
+            self.scheduler.start()  # 使用 redis存储后，任务自动重启
         except Exception as e:
             web_logger.error(e)
-
+        # 文件锁 ==》 linux上才能使用
         # f = open("scheduler.lock", "wb")
         # try:
         #     fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)

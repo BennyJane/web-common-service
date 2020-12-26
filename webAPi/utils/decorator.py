@@ -3,8 +3,6 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
-import json
-
 from flask import g
 from flask import request
 from flask import jsonify
@@ -89,7 +87,7 @@ class WhiteApi:
     white_apis = []  # 所有类共有的属性, 只在类被创建的时候实例化一次，后续无论该类实例化多少次，都公用该属性
 
     def __new__(cls, *args, **kwargs):  # 可以不写该方法，允许类被实例化多次，依然可以实现功能
-        # 特殊单例用法：只生成一个实例对象，但每次实例化都会重新运行__init__方法
+        # 单例模式：只生成一个实例对象，但每次实例化都会重新运行__init__方法
         instance = cls.__dict__.get("__instance__")
         if instance is not None:
             return instance

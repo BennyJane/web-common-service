@@ -19,10 +19,11 @@ from webAPi.constant import REDIS_MAIL_INTERVAL
 
 # TODO 实现单例模式，确保redis实例只实例化了一次
 class RedisConn:
-    def __init__(self, host='127.0.0.1', port=6379, password=''):
+    def __init__(self, host='127.0.0.1', port=6379, password='', db=0):
         self.host = host
         self.port = port
         self.password = password
+        self.db = db
         self.conn = None
 
         # 邮件任务配置项
@@ -32,6 +33,7 @@ class RedisConn:
         config = app.config
         self.host = config.get('REDIS_HOST')
         self.port = config.get('REDIS_PORT')
+        self.db = config.get('REDIS_DB') or 0
         self.password = config.get('REDIS_PASSWORD')
         self.project_domain = config.get("PROJECT_DOMAIN")
         self.cursor()
@@ -40,7 +42,7 @@ class RedisConn:
 
     def cursor(self):
         if self.password:
-            pool = redis.ConnectionPool(host=self.host, port=self.port, password=self.password)
+            pool = redis.ConnectionPool(host=self.host, port=self.port, password=self.password, db=self.db)
         else:
             pool = redis.ConnectionPool(host=self.host, port=self.port)
         self.conn = redis.Redis(connection_pool=pool)
@@ -80,11 +82,11 @@ class RedisConn:
                 time.sleep(REDIS_MAIL_INTERVAL)
                 # print("listen task ...", target_queue)
                 # blpop: 队列为空, 阻塞； timeout=0, 则无限阻塞
-                task_params = self.conn.blpop(target_queue, timeout=0)[1]  # 取出来的数据就是json格式
+                task_params = self.conn.blpop(target_queue, timeout=30)[1]  # 取出来的数据就是json格式
                 # 执行任务
                 request_send_mail(task_params, domain=self.project_domain)
             except Exception as e:
-                print(e)
+                web_logger.debug(e)
 
     def add_task(self, target_queue, task):
         """向队列中添加数据"""

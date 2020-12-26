@@ -5,6 +5,7 @@
 # Warning：The Hard Way Is Easier
 import os
 import logging
+from dotenv import load_dotenv
 from .base import BaseConfig
 from _compat import modifyPath
 from _compat import root_path as project_root_path
@@ -13,6 +14,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
+load_dotenv(".env")
 
 class DevelopmentConfig(BaseConfig):
     # 本项目使用的域名与端口号
@@ -34,6 +36,7 @@ class DevelopmentConfig(BaseConfig):
     REDIS_HOST = '127.0.0.1'
     REDIS_PORT = 6379
     REDIS_PASSWORD = None
+    REDIS_DB = None
 
     # 测试账号
     TEST_APP_ID = 'dc601e113be8a2e622f9f9a3f363eb93'

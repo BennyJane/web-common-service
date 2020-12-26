@@ -27,8 +27,9 @@ def get_logger(config_name=None):
         "%(asctime)s [%(module)s.%(filename)s %(lineno)s] [%(levelname)s] : %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-    if not os.path.exists(modifyPath(log_file_path)):
-        os.makedirs(log_file_path)
+    log_path = os.path.split(log_file_path)[0]
+    if not os.path.exists(modifyPath(log_path)):
+        os.makedirs(log_path)
     if log_file_path and current_env == 'produce':
         handler = RotatingFileHandler(log_file_path, maxBytes=log_file_size, backupCount=log_file_count)
     elif log_level is None:

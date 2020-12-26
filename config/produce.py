@@ -5,6 +5,8 @@
 # Warning：The Hard Way Is Easier
 import os
 import logging
+from dotenv import load_dotenv
+
 from .base import BaseConfig
 from _compat import modifyPath
 from _compat import root_path as project_root_path
@@ -12,6 +14,8 @@ from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+
+load_dotenv(".env")
 
 
 class ProduceConfig(BaseConfig):

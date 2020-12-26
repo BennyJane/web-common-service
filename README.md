@@ -6,7 +6,7 @@
   - flask-restful
   - apscheduler
 
-### 项目主要功能  
+### 主要功能  
 - 用户管理
     - 注册
     - 登录
@@ -14,6 +14,7 @@
     - 退出
     - 通过账号获取token
     - token刷新
+    - 验证码
 - 邮件模块
     - 添加模板
     - 修改模板
@@ -21,16 +22,30 @@
     - 异步发送邮件
 - 定时任务
     - 添加定时任务
-    - 更新
+    - 更新定时任务
     - 获取任务列表
-    - 删除任务
+    - 删除定时任务
 - 文件上传与下载
     - 上传文件
     - 下载文件
     - 预览文件
     - 更新配置信息
 
-### 项目运行
+### 项目本地运行
+1. 添加数据库连接
+项目需要用到Mysql与redis数据库,先在本地项目根目录下创建 .env 文件，内容如下：
+需要填写本地mysql、redis数据库以及邮件发送的信息
+```shell script
+FLASK_ENV=development
+FLASK_APP=main:app
+SQLALCHEMY_DATABASE_URI=mysql+pymysql://{user}:{password}@{host}:{port}/common_web_service?charset=utf8mb4
+FLASK_SECRET=custom_session_key
+MAIL_SERVER=邮箱服务器,例如 smtp.qq.com
+MAIL_USERNAME=发送邮件的邮箱
+MAIL_PASSWORD=发送邮件的密码
+```
+
+2.运行项目
 ```shell script
 # 项目根目录运行
 pip install -r requirement.txt
