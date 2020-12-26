@@ -3,8 +3,6 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/14 22:48
 # Warning    ：The Hard Way Is Easier
-import time
-
 
 class SnowFlakeId(object):
     WORKER_ID_BITS = 5

@@ -9,7 +9,6 @@ from webAPi.models import Column
 from webAPi.log import web_logger
 from webAPi.models import BaseMixin
 from webAPi.models import BaseModel
-from webAPi.utils.com import produce_id
 
 
 class Cron(BaseModel, BaseMixin):

@@ -6,6 +6,8 @@
 # import atexit
 # import fcntl
 import random
+
+import redis
 import requests
 from webAPi.log import web_logger
 from webAPi.utils.com import cron_date
@@ -32,17 +34,8 @@ class CronScheduler:
         """初始化任务功能"""
         self.task = CronTask()
         config = get_config_from_env()
-        conf = {  # redis配置
-            "host": config.REDIS_HOST,
-            "port": config.REDIS_PORT,
-            "db": 1,  # 连接1号数据库
-            "max_connections": 10  # redis最大支持300个连接数
-        }
-        job_stores = {
-            'redis': RedisJobStore(**conf)
-        }
         self.scheduler = BackgroundScheduler(
-            jobstores=job_stores,
+            jobstores=config.JOB_STORES,
             executors=config.JOB_EXECUTORS,
             job_default=config.JOB_DEFAULT,
             timezone='Asia/Shanghai'
@@ -149,7 +142,7 @@ class CronTask:
     def request_get(self, url):
         # 局部导入，避免包导入的错误
         from webAPi.extensions import redis_conn
-        from webAPi.utils.redis import redis_lock
+        from webAPi.utils.redis_libs import redis_lock
         with redis_lock(redis_conn.conn, "request_get") as lock:
             # 使用redis锁，确保任务触发时，该方法只执行一次，因为只有一个线程能执行成功
             if not lock:

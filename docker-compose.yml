@@ -2,18 +2,18 @@ version: '2.1'
 
 services:
   mysql:
-    container_name: mysql-db
+    container_name: common-mysql
     build:
       context: ./deploy/mysql
       args:
         - MYSQL_VER=5.7
     ports:
-      - "3306:3306"
+      - "3308:3306"
     volumes:
       - ./deploy/mysql/conf.d:/etc/mysql/conf.d:ro
     environment:
       MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE:
+      MYSQL_DATABASE: common_web_service
     restart: always
     networks:
       - web
@@ -22,13 +22,13 @@ services:
     command: "--character-set-server=utf8mb4"
 
   redis:
-    container_name: redis-db
+    container_name: common-redis
     build:
       context: ./deploy/redis
       args:
         - REDIS_VER=5
     ports:
-      - "6379:6379"
+      - "6381:6379"
     volumes:
       - ./deploy/redis/redis.conf:/usr/local/etc/redis/redis.conf:rw
     restart: always
@@ -48,7 +48,8 @@ services:
       # 从.env 文件读取
       FLASK_ENV:
       FLASK_APP:
-      SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:${$MYSQL_PASSWORD}@mysql:13306/common_web_service?charset=utf8mb4
+      SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:123456@mysql:3306/common_web_service?charset=utf8mb4
+      REDIS_URI: redis://:life123456@redis:6379/1
       FLASK_SECRET:
       MAIL_SERVER:
       MAIL_USERNAME:

@@ -5,6 +5,8 @@
 # Warning：The Hard Way Is Easier
 import os
 import logging
+
+import redis
 from dotenv import load_dotenv
 from .base import BaseConfig
 from _compat import win
@@ -13,7 +15,6 @@ from _compat import root_path as project_root_path
 from apscheduler.jobstores.redis import RedisJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.executors.pool import ProcessPoolExecutor
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 load_dotenv(".env")
 
@@ -28,7 +29,6 @@ class DevelopmentConfig(BaseConfig):
     SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI")
     if not SQLALCHEMY_DATABASE_URI:  # 没有添加mysql数据库连接时，创建sqlite数据库连接
         SQLALCHEMY_DATABASE_URI = prefix + os.path.join(project_root_path, 'data-dev.db')
-
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENCODING = "utf8mb4"
 
@@ -54,13 +54,12 @@ class DevelopmentConfig(BaseConfig):
     添加apscheduler定时任务调度配置
     ====================================================================================================================
     """
+    pools = redis.ConnectionPool.from_url(REDIS_URI)
+    connect_args = dict(connection_pool=pools)
     JOB_STORES = {
-        # "redis": RedisJobStore(host=REDIS_HOST, port=REDIS_PORT),  # 设置一个名为redis的job存储，后端使用 redis
-        "redis": RedisJobStore(url=REDIS_URI),  # 设置一个名为redis的job存储，后端使用 redis
-        # 一个名为 default 的 job 存储，后端使用数据库（使用 Sqlite）
-        # "default": SQLAlchemyJobStore(url="sqlite:///jobs.sqlite")
-        "backend_db": SQLAlchemyJobStore(url=SQLALCHEMY_DATABASE_URI)
+        'redis': RedisJobStore(**connect_args)
     }
+
     JOB_EXECUTORS = {
         "default": ThreadPoolExecutor(1),  # 设置一个名为 default的线程池执行器， 最大线程设置为20个
         # TODO 线程过多，会出现同一个任务被多次执行的情况

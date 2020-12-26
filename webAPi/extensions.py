@@ -7,19 +7,18 @@ from json import dumps
 
 from flask_mail import Mail
 from flask_cors import CORS
-from flask import current_app
-from flask import make_response
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
-from webAPi.utils.com import error_router
 from webAPi.utils.jwt import JWTManager
-from webAPi.utils.redis import RedisConn
-from flask_restful.utils import PY3
+from webAPi.utils.com import error_router
+from webAPi.utils.redis_libs import RedisConn
 from webAPi.utils.cron_libs import CronScheduler
 
 mail = Mail()
 csrf = CORS()
+migrate = Migrate()
 redis_conn = RedisConn()
 jwt_manager = JWTManager()
 cron_scheduler = CronScheduler()
@@ -29,6 +28,7 @@ db = SQLAlchemy(use_native_unicode='utf8mb4')
 def register_ext(app):
     """注册扩展包"""
     db.init_app(app)
+    migrate.init_app(app, db)
     jwt_manager.init_app(app)
     redis_conn.init_app(app)
     mail.init_app(app)

@@ -19,11 +19,14 @@ from webAPi.constant import REDIS_MAIL_INTERVAL
 
 # TODO 实现单例模式，确保redis实例只实例化了一次
 class RedisConn:
-    def __init__(self):
+    def __init__(self, app=None):
         self.conn = None
 
         # 邮件任务配置项
         self.project_domain = ""
+
+        if app is not None:
+            self.init_app(app)
 
     def init_app(self, app):
         config = app.config

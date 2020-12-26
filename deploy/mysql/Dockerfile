@@ -12,4 +12,4 @@ RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 # 更新安装依赖包
 RUN apt-get update && apt-get install -y \
         vim \
-        wget \
+        wget
