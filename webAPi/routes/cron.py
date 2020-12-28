@@ -17,7 +17,6 @@ from webAPi.extensions import cron_scheduler
 from webAPi.utils.com import getFormatDate
 
 cron_setting_parse = reqparse.RequestParser()
-# required=True, 会自动抛出异常，但返回接口格式不标准，必须重写返回返回方法
 cron_setting_parse.add_argument('id', type=str, location='json')
 cron_setting_parse.add_argument('cron', type=dict, location='json')
 cron_setting_parse.add_argument('callback_url', type=str, location='json')

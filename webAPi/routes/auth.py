@@ -5,20 +5,21 @@
 # Warning：The Hard Way Is Easier
 import datetime
 from sqlalchemy import and_
-from flask import current_app
 from flask_restful import reqparse
 from flask_restful import Resource
 
 from webAPi.response import ReqJson
 from webAPi.models.user import User
-from webAPi.utils.com import setSHA256, CaptchaTool, produce_id
+from webAPi.utils.com import setSHA256
+from webAPi.utils.com import CaptchaTool
+from webAPi.utils.com import produce_id
 from webAPi.extensions import db
 from webAPi.extensions import redis_conn
 from webAPi.extensions import jwt_manager
 from webAPi.utils.decorator import WhiteApi
 
 login_register_parse = reqparse.RequestParser()
-# TODO required=True, 会自动抛出异常，但返回接口格式不标准，弃用
+# required=True, 会自动抛出异常，但返回接口格式不标准，必须重写返回返回方法， 已经解决
 login_register_parse.add_argument('app_id', type=str, location='json')
 login_register_parse.add_argument('account', type=str, location='json')
 login_register_parse.add_argument('password', type=str, location='json')
@@ -53,13 +54,10 @@ class Register(Resource):
 class Login(Resource):
     def post(self):
         """login"""
-        req = ReqJson()  # 预设登录失败的情况， 缩减代码量
-        # 会自动抛出异常，但返回接口格式不标准，弃用 ==> 已经解决接口格式BUG，required参数可以直接使用
+        req = ReqJson()  # 预设失败的情况， 缩减代码量
         front_data = login_register_parse.parse_args()
         account = front_data.get('account')
         app_id = front_data.get('app_id')
-
-        current_app.logger.info(front_data)
 
         user = User.query.filter(and_(User.account == account, User.app_id == app_id)).first()
         if front_data['app_id'] is None:
@@ -135,8 +133,6 @@ class GetTokenByAccount(Resource):
         parse = reqparse.RequestParser(bundle_errors=True)
         parse.add_argument('account', type=str, location='args')
         parse.add_argument('app_id', type=str, location='args')
-        parse.add_argument('test', required=True, type=str, location='json', help="缺少test参数")
-        parse.add_argument('test2', required=True, type=str, location='json', help="缺少test参数")
         front_data = parse.parse_args()
         account = front_data.get("account")
         app_id = front_data.get("app_id")
@@ -282,8 +278,9 @@ class Captcha(Resource):
         """verify captcha"""
 
         def get_code_by_redis():
+            """使用生成器表达式特性，延迟执行；数据库查询操作只执行了一次"""
             key = redis_conn.get(self.key)
-            yield from {key for _ in range(3)}  # 生成器表达式
+            yield from {key for _ in range(3)}
 
         gen_key = get_code_by_redis()
         if not self.code:

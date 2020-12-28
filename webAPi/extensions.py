@@ -3,13 +3,11 @@
 # PROJECT    : web-common-service
 # Time       ：2020/12/4 11:09
 # Warning：The Hard Way Is Easier
-from json import dumps
-
 from flask_mail import Mail
 from flask_cors import CORS
 from flask_restful import Api
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
 from webAPi.utils.jwt import JWTManager
 from webAPi.utils.com import error_router
@@ -32,7 +30,7 @@ def register_ext(app):
     jwt_manager.init_app(app)
     redis_conn.init_app(app)
     mail.init_app(app)
-    csrf.init_app(app)
+    csrf.init_app(app)  # 解决跨域问题
     cron_scheduler.init_app(app)
 
 
