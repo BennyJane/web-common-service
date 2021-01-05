@@ -6,6 +6,8 @@
 import os
 import sys
 
+__all__ = ["win", "root_path", "modifyPath"]
+
 
 def isWindows():
     window_platform = False
